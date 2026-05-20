@@ -1,10 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FLOW-13</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background-color: #0a0a0c;
+            color: #ffffff;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card {
+            width: 100%;
+            background: #151518;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        .balance { font-size: 32px; font-weight: bold; color: #00ffcc; margin: 10px 0; }
+        .button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            background: #00ffcc;
+            color: #0a0a0c;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
 </head>
-<body style="background-color: #0a0a0c; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif;">
-    <h1>FLOW-13 РАБОТАЕТ!</h1>
+<body>
+    <div class="card">
+        <h2>FLOW-13</h2>
+        <p>Ваш текущий баланс:</p>
+        <div class="balance" id="balance">0 FLOW</div>
+        <div class="button" onclick="addFlow()">Намайнить FLOW</div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        let count = 0;
+        function addFlow() {
+            count += 13;
+            document.getElementById('balance').innerText = count + " FLOW";
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        }
+    </script>
 </body>
 </html>
