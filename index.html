@@ -3,99 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLOW-13: ELITE</title>
+    <title>FLOW-13 | Elite</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --neon: #00f2fe; --neon-dark: #008c96;
-            --bg: #050505; --card: rgba(25, 25, 30, 0.7);
-            --text: #ffffff;
+            --neon: #00f2fe; --bg: #050505; 
+            --card: rgba(255, 255, 255, 0.05);
+            --text: #ffffff; --glass: rgba(25, 25, 30, 0.7);
         }
-        * { box-sizing: border-box; transition: all 0.2s ease; }
-        body { 
-            background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; 
-            margin: 0; padding: 20px; text-align: center; overflow-x: hidden;
-        }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; margin: 0; padding: 20px; text-align: center; }
         
-        /* Glassmorphism Cards */
-        .glass { background: var(--card); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 20px; }
-        
-        .screen { display: none; opacity: 0; }
-        .active { display: block; opacity: 1; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 20px; }
+        .screen { display: none; opacity: 0; transition: opacity 0.4s; }
+        .active { display: block; opacity: 1; }
 
-        .profile-card { margin-bottom: 25px; position: relative; }
-        .avatar-main { width: 100%; max-width: 200px; height: auto; image-rendering: pixelated; margin: 10px 0; filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.3)); }
+        .avatar-container { margin: 20px 0; position: relative; }
+        .avatar-img { width: 160px; height: 160px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.3)); }
         
-        .stats { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .stat-val { font-size: 1.5rem; font-weight: 800; color: var(--neon); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 16px; }
         
-        .btn { width: 100%; padding: 20px; border: none; border-radius: 18px; font-weight: 700; font-size: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
-        .task-btn { background: var(--neon); color: #000; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4); }
-        .task-btn:active { transform: scale(0.98); }
-        .task-btn:disabled { background: #222; color: #555; box-shadow: none; cursor: not-allowed; }
-
-        .shop-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .buy-btn { background: #222; color: #fff; border: 1px solid var(--neon); padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; }
-        .buy-btn.active-btn { background: var(--neon); color: #000; border: none; }
+        .timer-ui { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; border-radius: 12px; width: 70px; text-align: center; }
+        
+        .btn { border: none; padding: 16px 20px; border-radius: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        .btn-main { background: var(--neon); color: #000; width: 100%; box-shadow: 0 4px 20px rgba(0, 242, 254, 0.3); }
+        .btn-secondary { background: #333; color: white; }
+        
+        .shop-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .shop-card { background: var(--card); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-buy { padding: 8px 16px; border-radius: 10px; border: 1px solid var(--neon); background: transparent; color: var(--neon); font-size: 12px; }
+        .btn-buy.active { background: var(--neon); color: #000; }
     </style>
 </head>
 <body>
 
     <div id="sex-screen" class="screen">
-        <h1 style="font-size: 2.5rem; margin-top: 40px;">FLOW-13</h1>
-        <p style="color: #888; margin-bottom: 40px;">ВЫБЕРИ СВОЙ АВАТАР</p>
-        <button class="btn task-btn" style="margin-bottom: 20px;" onclick="selectSex('male')">МУЖЧИНА</button>
-        <button class="btn task-btn" onclick="selectSex('female')">ЖЕНЩИНА</button>
+        <h1 style="margin-top: 50px;">FLOW-13</h1>
+        <p style="opacity: 0.6; margin-bottom: 40px;">Выберите своего аватара</p>
+        <button class="btn btn-main" style="margin-bottom: 15px;" onclick="selectSex('male')">МУЖЧИНА</button>
+        <button class="btn btn-main" onclick="selectSex('female')">ЖЕНЩИНА</button>
     </div>
 
     <div id="game-screen" class="screen">
-        <div class="stats glass">
-            <div>Очки<br><span class="stat-val" id="points">0</span></div>
-            <div>Задач<br><span class="stat-val" id="tasks-count">0/3</span></div>
+        <div class="stats-grid">
+            <div class="stat-card"><div>Очки</div><div id="points" style="font-size: 1.5rem; font-weight: 800; color: var(--neon);">0</div></div>
+            <div class="stat-card"><div>Задачи</div><div id="tasks-count" style="font-size: 1.5rem; font-weight: 800;">0/3</div></div>
         </div>
 
-        <div class="glass profile-card">
-            <img src="" alt="Avatar" class="avatar-main" id="avatar-img">
-            <h2 id="mood-text" style="font-size: 1.2rem; margin: 10px 0;">Загрузка...</h2>
+        <div class="glass avatar-container">
+            <img src="" class="avatar-img" id="avatar-img">
+            <div id="mood-text" style="font-weight: 600; margin-top: 10px;">Заряжен на успех</div>
         </div>
 
-        <button class="btn task-btn" id="task-btn" onclick="doTask()">ВЫПОЛНИТЬ ЗАДАЧУ (+100)</button>
+        <div class="timer-ui" id="timer-ui">
+            <input type="number" id="timer-input" value="25">
+            <button class="btn btn-secondary" onclick="startTimer()">START</button>
+        </div>
+        <div id="timer-display" style="font-size: 2.5rem; font-weight: 800; color: var(--neon); margin-bottom: 15px; display: none;">25:00</div>
 
-        <h3 style="text-align: left; margin: 30px 0 15px 5px; opacity: 0.7;">Гардероб</h3>
-        <div id="shop"></div>
+        <button class="btn btn-main" id="task-btn" onclick="doTask()">ВЫПОЛНИТЬ ЗАДАЧУ (+100)</button>
+
+        <h3 style="text-align: left; margin: 30px 0 10px 5px; opacity: 0.7;">Гардероб</h3>
+        <div class="shop-list" id="shop"></div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
-        // Включаем темную тему в самом ТГ
         tg.setHeaderColor('#050505');
 
         let state = JSON.parse(localStorage.getItem('flow13_data')) || { 
             points: 0, sex: null, avatar: 'base', owned: ['base'], tasksToday: 0, lastDate: new Date().toDateString() 
         };
+        let timerEnd = null;
 
         const skins = {
             male: {
-                base: { name: 'Футболка и шорты', price: 0, sad: 'male_base_sad.gif', dance: 'male_base_dance.gif' },
+                base: { name: 'Базовый стиль', price: 0, sad: 'male_base_sad.gif', dance: 'male_base_dance.gif' },
                 tech: { name: 'Кибер-костюм', price: 500, sad: 'male_tech_sad.gif', dance: 'male_tech_dance.gif' }
             },
             female: {
-                base: { name: 'Футболка и юбка', price: 0, sad: 'female_base_sad.gif', dance: 'female_base_dance.gif' },
+                base: { name: 'Базовый стиль', price: 0, sad: 'female_base_sad.gif', dance: 'female_base_dance.gif' },
                 tech: { name: 'Кибер-костюм', price: 500, sad: 'female_tech_sad.gif', dance: 'female_tech_dance.gif' }
             }
         };
 
-        function selectSex(s) { 
-            state.sex = s; 
-            updateUI(); 
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        }
+        function selectSex(s) { state.sex = s; updateUI(); }
 
         function checkDay() {
             const today = new Date().toDateString();
             if (state.lastDate !== today) { state.tasksToday = 0; state.lastDate = today; }
+        }
+
+        function startTimer() {
+            const mins = document.getElementById('timer-input').value;
+            timerEnd = Date.now() + (mins * 60 * 1000);
+            document.getElementById('timer-ui').style.display = 'none';
+            document.getElementById('timer-display').style.display = 'block';
+            updateUI();
+            
+            const interval = setInterval(() => {
+                const diff = timerEnd - Date.now();
+                if (diff <= 0) {
+                    clearInterval(interval);
+                    timerEnd = null;
+                    document.getElementById('timer-ui').style.display = 'flex';
+                    document.getElementById('timer-display').style.display = 'none';
+                    if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    updateUI();
+                } else {
+                    const m = Math.floor(diff / 60000);
+                    const s = Math.floor((diff % 60000) / 1000);
+                    document.getElementById('timer-display').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                }
+            }, 1000);
         }
 
         function updateUI() {
@@ -103,39 +125,30 @@
             if (!state.sex) {
                 document.getElementById('sex-screen').classList.add('active');
                 return;
-            } else {
-                document.getElementById('sex-screen').classList.remove('active');
-                document.getElementById('game-screen').classList.add('active');
             }
+            document.getElementById('sex-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
 
             document.getElementById('points').innerText = state.points;
             document.getElementById('tasks-count').innerText = state.tasksToday + '/3';
 
-            // Animation & Mood
             const skinData = skins[state.sex][state.avatar];
-            const img = document.getElementById('avatar-img');
-            const newSrc = (state.tasksToday > 0) ? skinData.dance : skinData.sad;
-            
-            if(img.src.indexOf(newSrc) === -1) img.src = newSrc;
-            
-            document.getElementById('mood-text').innerText = (state.tasksToday > 0) ? "ТАНЦУЮ ОТ УСПЕХА!" : "ГРУЩУ... НУЖНА ЗАДАЧА";
+            document.getElementById('avatar-img').src = (state.tasksToday > 0) ? skinData.dance : skinData.sad;
+            document.getElementById('mood-text').innerText = (state.tasksToday > 0) ? "В ПОТОКЕ!" : "НУЖНА ЗАДАЧА...";
 
-            // Button
             const btn = document.getElementById('task-btn');
             btn.disabled = state.tasksToday >= 3;
-            btn.innerText = state.tasksToday >= 3 ? "ЛИМИТ НА СЕГОДНЯ" : "ВЫПОЛНИТЬ ЗАДАЧУ (+100)";
+            btn.innerText = (timerEnd !== null) ? "ИДЕТ ТАЙМЕР..." : (state.tasksToday >= 3 ? "ЛИМИТ ИСЧЕРПАН" : "ВЫПОЛНИТЬ (+100)");
 
-            // Shop
             const shopDiv = document.getElementById('shop');
             shopDiv.innerHTML = '';
             Object.entries(skins[state.sex]).forEach(([id, data]) => {
-                const isOwned = state.owned.includes(id);
                 const isActive = state.avatar === id;
                 shopDiv.innerHTML += `
-                    <div class="shop-item">
-                        <span style="font-weight: 500;">${data.name}</span>
-                        <button class="buy-btn ${isActive ? 'active-btn' : ''}" onclick="buy('${id}', ${data.price})">
-                            ${isActive ? 'НАДЕТО' : (isOwned ? 'НАДЕТЬ' : data.price + ' ОЧКОВ')}
+                    <div class="shop-card">
+                        <span>${data.name}</span>
+                        <button class="btn-buy ${isActive ? 'active' : ''}" onclick="buy('${id}', ${data.price})">
+                            ${isActive ? 'ВЫБРАНО' : (state.owned.includes(id) ? 'ВЫБРАТЬ' : data.price)}
                         </button>
                     </div>`;
             });
@@ -143,29 +156,24 @@
         }
 
         function doTask() {
+            if (timerEnd !== null) {
+                tg.showAlert("Фокус активен! Завершите таймер, чтобы сохранить продуктивность.");
+                return;
+            }
             if (state.tasksToday < 3) {
                 state.points += 100;
                 state.tasksToday++;
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
                 updateUI();
             }
         }
 
         function buy(id, price) {
-            if (state.owned.includes(id)) { 
-                state.avatar = id; 
-                if(tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-            }
+            if (state.owned.includes(id)) { state.avatar = id; }
             else if (state.points >= price) { 
-                state.points -= price; 
-                state.owned.push(id); 
-                state.avatar = id; 
+                state.points -= price; state.owned.push(id); state.avatar = id; 
                 if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            }
-            else { 
-                alert("Недостаточно очков!"); 
-                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-            }
+            } else { alert("Недостаточно очков!"); return; }
             updateUI();
         }
 
