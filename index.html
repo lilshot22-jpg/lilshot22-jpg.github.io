@@ -6,26 +6,43 @@
     <title>FLOW-13</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #0a0a0c; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .stats { background: #151518; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        .avatar-zone { font-size: 80px; margin: 10px 0; }
-        .task-btn { width: 100%; padding: 15px; background: #00f2fe; color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; }
+        :root { --neon: #00f2fe; --bg: #0a0a0c; --card: #151518; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; }
+        
+        /* Статистика */
+        .stats { display: flex; justify-content: space-between; background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; font-weight: bold; }
+        
+        /* Зона персонажа */
+        .profile-card { background: #1a1a1f; padding: 30px; border-radius: 20px; border: 2px solid var(--neon); box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); margin-bottom: 25px; }
+        .avatar-main { font-size: 100px; margin: 10px 0; text-shadow: 0 0 15px var(--neon); }
+        
+        /* Кнопка */
+        .task-btn { width: 100%; padding: 18px; background: var(--neon); color: #000; border: none; border-radius: 15px; font-weight: bold; font-size: 18px; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
         .task-btn:disabled { background: #333; color: #888; }
-        .shop-item { background: #1f1f23; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .buy-btn { background: #7000ff; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+
+        /* Магазин */
+        .shop-title { text-align: left; margin-bottom: 15px; color: var(--neon); }
+        .shop-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
+        .skin-icon { font-size: 30px; margin-right: 15px; }
+        .buy-btn { background: #7000ff; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .active-btn { background: #333; color: #aaa; }
     </style>
 </head>
 <body>
 
     <div class="stats">
-        <div>Очки: <span id="points">0</span> | Задач сегодня: <span id="tasks-count">0</span>/3</div>
+        <div>Очки: <span id="points">0</span></div>
+        <div>Задачи: <span id="tasks-count">0</span>/3</div>
     </div>
 
-    <div class="avatar-zone" id="avatar">👤</div>
+    <div class="profile-card">
+        <div class="avatar-main" id="avatar">👤</div>
+        <h2 id="rank-name">Ваш герой</h2>
+    </div>
 
     <button class="task-btn" id="task-btn" onclick="doTask()">ВЫПОЛНИТЬ ЗАДАЧУ (+100)</button>
 
-    <h3 style="text-align: left;">Апгрейд Личности</h3>
+    <h3 class="shop-title">Экипировка</h3>
     <div id="shop"></div>
 
     <script>
@@ -34,12 +51,15 @@
         tg.expand();
 
         let state = JSON.parse(localStorage.getItem('flow13_data')) || { 
-            points: 0, 
-            avatar: '👤', 
-            owned: ['👤'], 
-            tasksToday: 0, 
-            lastDate: new Date().toDateString() 
+            points: 0, avatar: '👤', owned: ['👤'], tasksToday: 0, lastDate: new Date().toDateString() 
         };
+
+        const shopItems = [
+            { id: '👤', name: 'Стандарт', price: 0 },
+            { id: '🤖', name: 'Киборг', price: 500 },
+            { id: '🥷', name: 'Тень', price: 1200 },
+            { id: '🤵', name: 'Магнат', price: 2500 }
+        ];
 
         function checkDayReset() {
             const today = new Date().toDateString();
@@ -55,31 +75,27 @@
             document.getElementById('tasks-count').innerText = state.tasksToday;
             document.getElementById('avatar').innerText = state.avatar;
             
+            // Кнопка задачи
             const btn = document.getElementById('task-btn');
-            if (state.tasksToday >= 3) {
-                btn.disabled = true;
-                btn.innerText = "ЛИМИТ НА СЕГОДНЯ ИСЧЕРПАН";
-            } else {
-                btn.disabled = false;
-                btn.innerText = "ВЫПОЛНИТЬ ЗАДАЧУ (+100)";
-            }
+            btn.disabled = state.tasksToday >= 3;
+            btn.innerText = state.tasksToday >= 3 ? "ЛИМИТ ИСЧЕРПАН" : "ВЫПОЛНИТЬ ЗАДАЧУ (+100)";
 
+            // Отрисовка магазина
             const shopDiv = document.getElementById('shop');
             shopDiv.innerHTML = '';
-            const shopItems = [
-                { id: '👤', name: 'Стандарт', price: 0 },
-                { id: '🤖', name: 'Киборг', price: 500 },
-                { id: '🥷', name: 'Тень', price: 1200 },
-                { id: '🤵', name: 'Магнат', price: 2500 }
-            ];
-
             shopItems.forEach((item, index) => {
                 const isOwned = state.owned.includes(item.id);
+                const isActive = state.avatar === item.id;
+                
                 shopDiv.innerHTML += `
                     <div class="shop-item">
-                        <span>${item.id} ${item.name}</span>
-                        <button class="buy-btn" onclick="buySkin(${index}, ${item.price}, '${item.id}')">
-                            ${isOwned ? 'Надеть' : item.price}
+                        <div style="display:flex; align-items:center">
+                            <span class="skin-icon">${item.id}</span>
+                            <span>${item.name}</span>
+                        </div>
+                        <button class="buy-btn ${isActive ? 'active-btn' : ''}" 
+                                onclick="buySkin(${index}, ${item.price}, '${item.id}')">
+                            ${isActive ? 'Надето' : (isOwned ? 'Надеть' : item.price)}
                         </button>
                     </div>
                 `;
