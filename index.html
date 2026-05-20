@@ -18,7 +18,8 @@
         .active { display: block; opacity: 1; }
 
         .avatar-container { margin: 20px 0; position: relative; }
-        .avatar-img { width: 160px; height: 160px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.3)); }
+        /* Размер аватара увеличен для красивого пиксель-арта */
+        .avatar-img { width: 180px; height: 180px; object-fit: cover; border-radius: 15px; margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.3)); }
         
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--card); padding: 15px; border-radius: 16px; }
@@ -32,7 +33,7 @@
         
         .shop-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .shop-card { background: var(--card); padding: 15px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-buy { padding: 8px 16px; border-radius: 10px; border: 1px solid var(--neon); background: transparent; color: var(--neon); font-size: 12px; }
+        .btn-buy { padding: 8px 16px; border-radius: 10px; border: 1px solid var(--neon); background: transparent; color: var(--neon); font-size: 12px; cursor: pointer;}
         .btn-buy.active { background: var(--neon); color: #000; }
     </style>
 </head>
@@ -53,7 +54,7 @@
 
         <div class="glass avatar-container">
             <img src="" class="avatar-img" id="avatar-img">
-            <div id="mood-text" style="font-weight: 600; margin-top: 10px;">Заряжен на успех</div>
+            <div id="mood-text" style="font-weight: 600; margin-top: 5px;">Заряжен на успех</div>
         </div>
 
         <div class="timer-ui" id="timer-ui">
@@ -78,14 +79,31 @@
         };
         let timerEnd = null;
 
+        // Я ВСТАВИЛ ГОТОВЫЕ ССЫЛКИ НА ГИФКИ ПРЯМО ИЗ ИНТЕРНЕТА
         const skins = {
             male: {
-                base: { name: 'Базовый стиль', price: 0, sad: 'male_base_sad.gif', dance: 'male_base_dance.gif' },
-                tech: { name: 'Кибер-костюм', price: 500, sad: 'male_tech_sad.gif', dance: 'male_tech_dance.gif' }
+                base: { 
+                    name: 'Базовый стиль', price: 0, 
+                    sad: 'https://media.giphy.com/media/L95W4wv8nclbO/giphy.gif', 
+                    dance: 'https://media.giphy.com/media/10UeedrT5MIfPG/giphy.gif' 
+                },
+                tech: { 
+                    name: 'Кибер-костюм', price: 500, 
+                    sad: 'https://media.giphy.com/media/3oz8xwd9CNfaDfHnc4/giphy.gif', 
+                    dance: 'https://media.giphy.com/media/mXnO9IiWWarkI/giphy.gif' 
+                }
             },
             female: {
-                base: { name: 'Базовый стиль', price: 0, sad: 'female_base_sad.gif', dance: 'female_base_dance.gif' },
-                tech: { name: 'Кибер-костюм', price: 500, sad: 'female_tech_sad.gif', dance: 'female_tech_dance.gif' }
+                base: { 
+                    name: 'Базовый стиль', price: 0, 
+                    sad: 'https://media.giphy.com/media/JLAEst1DbUTyE/giphy.gif', 
+                    dance: 'https://media.giphy.com/media/bzo27ZqGjPa2Q/giphy.gif' 
+                },
+                tech: { 
+                    name: 'Неоновая броня', price: 500, 
+                    sad: 'https://media.giphy.com/media/8YZpVrMEYEg7K/giphy.gif', 
+                    dance: 'https://media.giphy.com/media/26vUOlsE6O2r0MvT2/giphy.gif' 
+                }
             }
         };
 
