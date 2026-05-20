@@ -5,56 +5,360 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FLOW-13</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             background-color: #0a0a0c;
             color: #ffffff;
-            font-family: sans-serif;
-            margin: 0;
-            padding: 20px;
+            overflow-x: hidden;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        /* Линия неонового пульса на самом верху */
+        .top-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #00f2fe, #7000ff, #00f2fe);
+            background-size: 200% auto;
+            animation: pulseGlow 3s linear infinite;
+            z-index: 1000;
+        }
+
+        /* Шапка профиля */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 24px;
+        }
+
+        .user-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-placeholder {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7000ff, #00f2fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(112, 0, 255, 0.4);
+            font-size: 14px;
+        }
+
+        .username {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .status-badge {
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            color: #00f2fe;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Главный Экран Баланса (Глассморфизм) */
+        .main-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(112, 0, 255, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: #8a8a93;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .balance-amount {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(120deg, #ffffff 60%, #a2a2ab);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .balance-amount span {
+            font-size: 22px;
+            color: #00f2fe;
+            -webkit-text-fill-color: initial;
+        }
+
+        /* Внутренние метрики */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 16px;
+        }
+
+        .stat-box .val {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .stat-box .val.purple { color: #bf7fff; }
+
+        /* Сетка Кнопок действий */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
             display: flex;
             flex-direction: column;
+            gap: 8px;
+            align-items: start;
+            transition: all 0.2s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7000ff, #4facfe);
+            border: none;
+            box-shadow: 0 8px 20px rgba(112, 0, 255, 0.3);
+        }
+        .btn-primary:active {
+            background: linear-gradient(135deg, #5900cc, #3b94dd);
+        }
+
+        .btn-icon {
+            font-size: 20px;
+        }
+
+        /* Секция логов / Активности */
+        .section-title {
+            font-size: 14px;
+            color: #8a8a93;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            padding-left: 4px;
+        }
+
+        .logs-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .log-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
-        .card {
-            width: 100%;
-            background: #151518;
-            padding: 20px;
-            border-radius: 20px;
-            text-align: center;
-            border: 1px solid #333;
+
+        .log-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
-        .balance { font-size: 32px; font-weight: bold; color: #00ffcc; margin: 10px 0; }
-        .button {
-            margin-top: 20px;
-            padding: 15px 30px;
-            background: #00ffcc;
-            color: #0a0a0c;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
+
+        .log-title {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .log-time {
+            font-size: 11px;
+            color: #636366;
+        }
+
+        .log-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .log-value.plus { color: #34c759; }
+        .log-value.minus { color: #ff3b30; }
+
+        /* Анимации */
+        @keyframes pulseGlow {
+            0% { background-position: 0% auto; }
+            100% { background-position: 200% auto; }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>FLOW-13</h2>
-        <p>Ваш текущий баланс:</p>
-        <div class="balance" id="balance">0 FLOW</div>
-        <div class="button" onclick="addFlow()">Намайнить FLOW</div>
+
+    <div class="top-glow"></div>
+
+    <div class="header">
+        <div class="user-block">
+            <div class="avatar-placeholder" id="avatar-letters">F13</div>
+            <div class="username" id="username">LOADING...</div>
+        </div>
+        <div class="status-badge">NODE ACTIVE</div>
+    </div>
+
+    <div class="main-card">
+        <div class="card-label">Flow Index / Общий Поток</div>
+        <div class="balance-amount" id="balance-val">13,420<span>FLOW</span></div>
+        
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="card-label">В холде</div>
+                <div class="val purple" id="hold-val">5,200 HLD</div>
+            </div>
+            <div class="stat-box">
+                <div class="card-label">Скорость</div>
+                <div class="val" id="velocity-val">+13.8% / сек</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Управление Потоком</div>
+    <div class="actions-grid">
+        <button class="btn btn-primary" onclick="triggerAction('inject')">
+            <span class="btn-icon">⚡</span>
+            <span>Inject Flow</span>
+        </button>
+        <button class="btn" onclick="triggerAction('hold')">
+            <span class="btn-icon">🔒</span>
+            <span>Freeze Hold</span>
+        </button>
+        <button class="btn" onclick="triggerAction('extract')">
+            <span class="btn-icon">💎</span>
+            <span>Extract</span>
+        </button>
+        <button class="btn" onclick="triggerAction('nodes')">
+            <span class="btn-icon">🌐</span>
+            <span>System Nodes</span>
+        </button>
+    </div>
+
+    <div class="section-title">Стрим Логи / Live Feed</div>
+    <div class="logs-container">
+        <div class="log-item">
+            <div class="log-left">
+                <div class="log-title">Инициализация FLOW-13</div>
+                <div class="log-time">Только что</div>
+            </div>
+            <div class="log-value plus">ONLINE</div>
+        </div>
+        <div class="log-item">
+            <div class="log-left">
+                <div class="log-title">Синхронизация с нодой #13</div>
+                <div class="log-time">1 мин назад</div>
+            </div>
+            <div class="log-value" style="color: #00f2fe;">STABLE</div>
+        </div>
     </div>
 
     <script>
+        // Инициализация Telegram WebApp API
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        
-        let count = 0;
-        function addFlow() {
-            count += 13;
-            document.getElementById('balance').innerText = count + " FLOW";
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+
+        // Устанавливаем цвета для интеграции с интерфейсом ТГ
+        tg.backgroundColor = "#0a0a0c";
+        tg.headerColor = "#0a0a0c";
+
+        // Динамически подгружаем имя юзера из Telegram
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            const name = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+            document.getElementById('username').innerText = name.toUpperCase();
+            
+            // Генерируем красивую аватарку из первых букв имени
+            const letters = user.first_name.substring(0, 2).toUpperCase();
+            document.getElementById('avatar-letters').innerText = letters;
+        } else {
+            document.getElementById('username').innerText = "MARKET DISRUPTOR";
+        }
+
+        // Функция обработки кликов с крутой вибрацией (Haptic Feedback)
+        function triggerAction(actionType) {
+            // Вызываем виброотклик средней жесткости (работает на iOS и Android в ТГ)
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+
+            // Интерактив для теста кнопок: слегка меняем цифры при кликах
+            if (actionType === 'inject') {
+                let bal = document.getElementById('balance-val');
+                bal.innerHTML = "14,750 <span>FLOW</span>";
+                bal.style.textShadow = "0 0 20px rgba(0, 242, 254, 0.6)";
+                setTimeout(() => bal.style.textShadow = "none", 300);
+            }
+            if (actionType === 'hold') {
+                document.getElementById('hold-val').innerText = "6,500 HLD";
+            }
         }
     </script>
 </body>
 </html>
+
