@@ -3,102 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLOW-13</title>
+    <title>FLOW-13: RPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --neon: #00f2fe; --bg: #0a0a0c; --card: #151518; }
         body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; }
         
-        /* Статистика */
-        .stats { display: flex; justify-content: space-between; background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; font-weight: bold; }
-        
-        /* Зона персонажа */
-        .profile-card { background: #1a1a1f; padding: 30px; border-radius: 20px; border: 2px solid var(--neon); box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); margin-bottom: 25px; }
-        .avatar-main { font-size: 100px; margin: 10px 0; text-shadow: 0 0 15px var(--neon); }
-        
-        /* Кнопка */
-        .task-btn { width: 100%; padding: 18px; background: var(--neon); color: #000; border: none; border-radius: 15px; font-weight: bold; font-size: 18px; margin-bottom: 25px; cursor: pointer; transition: 0.3s; }
-        .task-btn:disabled { background: #333; color: #888; }
+        .screen { display: none; }
+        .active { display: block; }
 
-        /* Магазин */
-        .shop-title { text-align: left; margin-bottom: 15px; color: var(--neon); }
-        .shop-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
-        .skin-icon { font-size: 30px; margin-right: 15px; }
-        .buy-btn { background: #7000ff; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .profile-card { background: #1a1a1f; padding: 20px; border-radius: 20px; border: 2px solid var(--neon); margin-bottom: 25px; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .avatar-main { max-height: 200px; width: auto; image-rendering: pixelated; margin-bottom: 10px; }
+        
+        .stats { display: flex; justify-content: space-around; background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 20px; font-weight: bold; border: 1px solid #333; }
+        
+        .btn { width: 100%; padding: 18px; border: none; border-radius: 15px; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
+        .task-btn { background: var(--neon); color: #000; }
+        .task-btn:disabled { background: #333; color: #888; }
+        .sex-btn { background: #7000ff; color: #fff; width: 45%; display: inline-block; }
+
+        .shop-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
+        .buy-btn { background: #7000ff; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; }
         .active-btn { background: #333; color: #aaa; }
     </style>
 </head>
 <body>
 
-    <div class="stats">
-        <div>Очки: <span id="points">0</span></div>
-        <div>Задачи: <span id="tasks-count">0</span>/3</div>
+    <div id="sex-screen" class="screen">
+        <h1 style="color: var(--neon)">FLOW-13</h1>
+        <h2>ВЫБЕРИ СВОЕГО ГЕРОЯ</h2>
+        <button class="btn sex-btn" onclick="selectSex('male')">👨 Мужчина</button>
+        <button class="btn sex-btn" onclick="selectSex('female')">👩 Женщина</button>
     </div>
 
-    <div class="profile-card">
-        <div class="avatar-main" id="avatar">👤</div>
-        <h2 id="rank-name">Ваш герой</h2>
+    <div id="game-screen" class="screen">
+        <div class="stats">
+            <div>Очки: <span id="points">0</span></div>
+            <div>Задач: <span id="tasks-count">0</span>/3</div>
+        </div>
+
+        <div class="profile-card">
+            <img src="" alt="Avatar" class="avatar-main" id="avatar-img">
+            <h2 id="mood-text">...</h2>
+        </div>
+
+        <button class="btn task-btn" id="task-btn" onclick="doTask()">ВЫПОЛНИТЬ ЗАДАЧУ (+100)</button>
+
+        <h3 style="text-align: left; color: var(--neon);">Гардероб</h3>
+        <div id="shop"></div>
     </div>
-
-    <button class="task-btn" id="task-btn" onclick="doTask()">ВЫПОЛНИТЬ ЗАДАЧУ (+100)</button>
-
-    <h3 class="shop-title">Экипировка</h3>
-    <div id="shop"></div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        tg.ready(); tg.expand();
 
         let state = JSON.parse(localStorage.getItem('flow13_data')) || { 
-            points: 0, avatar: '👤', owned: ['👤'], tasksToday: 0, lastDate: new Date().toDateString() 
+            points: 0, sex: null, avatar: 'base', owned: ['base'], tasksToday: 0, lastDate: new Date().toDateString() 
         };
 
-        const shopItems = [
-            { id: '👤', name: 'Стандарт', price: 0 },
-            { id: '🤖', name: 'Киборг', price: 500 },
-            { id: '🥷', name: 'Тень', price: 1200 },
-            { id: '🤵', name: 'Магнат', price: 2500 }
-        ];
-
-        function checkDayReset() {
-            const today = new Date().toDateString();
-            if (state.lastDate !== today) {
-                state.tasksToday = 0;
-                state.lastDate = today;
+        const skins = {
+            male: {
+                base: { name: 'База', price: 0, sad: 'male_base_sad.gif', dance: 'male_base_dance.gif' },
+                tech: { name: 'Киборг', price: 500, sad: 'male_tech_sad.gif', dance: 'male_tech_dance.gif' }
+            },
+            female: {
+                base: { name: 'База', price: 0, sad: 'female_base_sad.gif', dance: 'female_base_dance.gif' },
+                tech: { name: 'Киборг', price: 500, sad: 'female_tech_sad.gif', dance: 'female_tech_dance.gif' }
             }
+        };
+
+        function selectSex(s) { state.sex = s; updateUI(); }
+
+        function checkDay() {
+            const today = new Date().toDateString();
+            if (state.lastDate !== today) { state.tasksToday = 0; state.lastDate = today; }
         }
 
         function updateUI() {
-            checkDayReset();
+            checkDay();
+            if (!state.sex) {
+                document.getElementById('sex-screen').classList.add('active');
+                return;
+            } else {
+                document.getElementById('sex-screen').classList.remove('active');
+                document.getElementById('game-screen').classList.add('active');
+            }
+
             document.getElementById('points').innerText = state.points;
             document.getElementById('tasks-count').innerText = state.tasksToday;
-            document.getElementById('avatar').innerText = state.avatar;
-            
-            // Кнопка задачи
+
+            // Логика анимации
+            const skinData = skins[state.sex][state.avatar];
+            const img = document.getElementById('avatar-img');
+            img.src = (state.tasksToday > 0) ? skinData.dance : skinData.sad;
+            document.getElementById('mood-text').innerText = (state.tasksToday > 0) ? "ТАНЦУЮ ОТ УСПЕХА!" : "ГРУЩУ... НУЖНА ЗАДАЧА";
+
+            // Кнопка
             const btn = document.getElementById('task-btn');
             btn.disabled = state.tasksToday >= 3;
-            btn.innerText = state.tasksToday >= 3 ? "ЛИМИТ ИСЧЕРПАН" : "ВЫПОЛНИТЬ ЗАДАЧУ (+100)";
+            btn.innerText = state.tasksToday >= 3 ? "ЛИМИТ ИСЧЕРПАН" : "ВЫПОЛНИТЬ (+100)";
 
-            // Отрисовка магазина
+            // Магазин
             const shopDiv = document.getElementById('shop');
             shopDiv.innerHTML = '';
-            shopItems.forEach((item, index) => {
-                const isOwned = state.owned.includes(item.id);
-                const isActive = state.avatar === item.id;
-                
+            Object.entries(skins[state.sex]).forEach(([id, data]) => {
+                const isOwned = state.owned.includes(id);
+                const isActive = state.avatar === id;
                 shopDiv.innerHTML += `
                     <div class="shop-item">
-                        <div style="display:flex; align-items:center">
-                            <span class="skin-icon">${item.id}</span>
-                            <span>${item.name}</span>
-                        </div>
-                        <button class="buy-btn ${isActive ? 'active-btn' : ''}" 
-                                onclick="buySkin(${index}, ${item.price}, '${item.id}')">
-                            ${isActive ? 'Надето' : (isOwned ? 'Надеть' : item.price)}
+                        <span>${data.name}</span>
+                        <button class="buy-btn ${isActive ? 'active-btn' : ''}" onclick="buy('${id}', ${data.price})">
+                            ${isActive ? 'Надето' : (isOwned ? 'Надеть' : data.price)}
                         </button>
-                    </div>
-                `;
+                    </div>`;
             });
             localStorage.setItem('flow13_data', JSON.stringify(state));
         }
@@ -112,16 +129,10 @@
             }
         }
 
-        function buySkin(index, price, id) {
-            if (state.owned.includes(id)) {
-                state.avatar = id;
-            } else if (state.points >= price) {
-                state.points -= price;
-                state.owned.push(id);
-                state.avatar = id;
-            } else {
-                alert("Недостаточно очков!");
-            }
+        function buy(id, price) {
+            if (state.owned.includes(id)) { state.avatar = id; }
+            else if (state.points >= price) { state.points -= price; state.owned.push(id); state.avatar = id; }
+            else { alert("Недостаточно очков!"); }
             updateUI();
         }
 
