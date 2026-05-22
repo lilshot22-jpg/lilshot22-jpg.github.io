@@ -2,343 +2,44 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FLOW-13 System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FLOW-13 & Stats</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <style>
-        /* АРХИТЕКТУРНЫЙ ДИЗАЙН (Темная тема + Неон) */
         :root {
-            --bg: #121212;
-            --surface: #1e1e1e;
-            --text: #e0e0e0;
-            --neon-pink: #ff007f;
-            --neon-green: #00ff66;
+            --bg-color: #f3f6fc; --text-main: #333333; --text-muted: #888888;
+            --card-bg: #ffffff; --card-border: #eee; --card-border-bottom: #e0e0e0;
+            --slider-track: #eef2f7; --primary: #8e44ad; --primary-shadow: #6c3483;
+            --accent: #ff9f43; --btn-bg: #f0f0f0; --green: #2ecc71; --green-shadow: #27ae60;
+            --advice-bg: #f9e7ff; --advice-text: #4a148c; --nav-bg: #ffffff; --chart-grid: #e0e0e0;
         }
+
+        [data-theme="dark"] {
+            --bg-color: #131926; --text-main: #ffffff; --text-muted: #a0aab8;
+            --card-bg: #202938; --card-border: #2d384c; --card-border-bottom: #1a2332;
+            --slider-track: #2b364a; --primary: #a855f7; --primary-shadow: #7e22ce;
+            --btn-bg: #2b364a; --advice-bg: #2e1a47; --advice-text: #f3e8ff;
+            --nav-bg: #202938; --chart-grid: #374151;
+        }
+
+        * { box-sizing: border-box; font-family: 'Nunito', sans-serif; transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
         
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
+        body { background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px 15px 90px 15px; overflow-x: hidden; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         
-        .header { 
-            text-align: center; 
-            margin-bottom: 25px; 
-            border-bottom: 1px solid #333; 
-            padding-bottom: 15px; 
-        }
-        
-        h2 { margin: 0 0 10px 0; letter-spacing: 2px; }
-        .streak { color: var(--neon-pink); font-weight: bold; font-size: 1.2em; text-transform: uppercase; }
-        
-        .card { 
-            background: var(--surface); 
-            padding: 20px; 
-            border-radius: 12px; 
-            margin-bottom: 15px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        
-        h3 { margin-top: 0; color: #fff; font-size: 1.1em; }
-        
-        .slider-container { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            margin-top: 15px;
-        }
-        
-        input[type=range] { 
-            flex-grow: 1; 
-            margin: 0 15px; 
-            accent-color: var(--neon-pink); 
-        }
-        
-        textarea { 
-            width: 100%; 
-            background: #2a2a2a; 
-            border: 1px solid #444; 
-            color: #fff; 
-            padding: 12px; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            font-family: inherit;
-            resize: none;
-        }
-        
-        .btn { 
-            background: var(--neon-pink); 
-            color: white; 
-            border: none; 
-            padding: 16px; 
-            width: 100%; 
-            font-weight: bold; 
-            font-size: 16px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            margin-bottom: 15px; 
-            box-shadow: 0 0 12px rgba(255, 0, 127, 0.5);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-share { 
-            background: var(--neon-pink); 
-            box-shadow: 0 0 12px rgba(255, 0, 127, 0.5); 
-            color: #fff; 
-        }
-        
-        #advice-block { 
-            display: none; 
-            background: #1a1a1a; 
-            padding: 20px; 
-            border-left: 4px solid var(--neon-pink); 
-            border-radius: 0 12px 12px 0; 
-            margin-top: 25px; 
-            line-height: 1.5;
-        }
-        
-        .emoji-val { font-size: 1.5em; width: 35px; text-align: center; }
-        .num-val { width: 20px; text-align: right; font-weight: bold; color: #888; }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <h2>FLOW-13</h2>
-        <div class="streak">🔥 Стрик: <span id="streak-count">0</span> дней</div>
-    </div>
-
-    <div class="card">
-        <h3>🛏 Сон и Восстановление</h3>
-        <div class="slider-container">
-            <span class="emoji-val" id="sleep-emoji">😐</span>
-            <input type="range" id="sleep-slider" min="1" max="5" value="3" oninput="updateUI()">
-            <span class="num-val">5</span>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>🔋 Раскачка (Энергия утром)</h3>
-        <div class="slider-container">
-            <span class="emoji-val" id="energy-emoji">⚡</span>
-            <input type="range" id="energy-slider" min="1" max="5" value="3" oninput="updateUI()">
-            <span class="num-val">5</span>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>📉 Баланс дня (Прогноз)</h3>
-        <div class="slider-container">
-            <span class="emoji-val" id="energyday-emoji">📊</span>
-            <input type="range" id="energyday-slider" min="1" max="5" value="3" oninput="updateUI()">
-            <span class="num-val">5</span>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>🧠 Менталка и Фокус</h3>
-        <div class="slider-container">
-            <span class="emoji-val" id="mood-emoji">😐</span>
-            <input type="range" id="mood-slider" min="1" max="5" value="3" oninput="updateUI()">
-            <span class="num-val">5</span>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>Заметка Архитектора</h3>
-        <textarea id="note-input" rows="3" placeholder="Что забрало или дало ресурс сегодня? Запиши баги системы."></textarea>
-    </div>
-
-    <button id="save-btn" class="btn" onclick="generateAnalysis()">Сгенерировать протокол</button>
-
-    <div id="advice-block">
-        <h3 style="color: var(--neon-pink); margin-bottom: 15px;">Твой системный протокол:</h3>
-        <div id="advice-content" style="margin-bottom: 20px;"></div>
-        <button id="share-btn" class="btn btn-share" onclick="shareResult()">📢 ПОДЕЛИТЬСЯ В СТОРИС</button>
-    </div>
-
-    <script>
-        // Инициализация Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.expand(); // Разворачиваем на весь экран
+        .streak-badge {
+            background: var(--card-bg); border: 2px solid var(--card-border); border-bottom: 4px solid var(--card-border-bottom);
+            padding: 8px 16px; border-radius: 20px; font-weight: 800; font-size: 18px; color: var(--accent); display: flex; align-items: center; gap: 5px;
         }
 
-        // Словари эмодзи для визуала ползунков
-        const emojis = {
-            sleep: {1: "😫", 2: "🥱", 3: "😐", 4: "🙂", 5: "🤩"},
-            energy: {1: "🪫", 2: "🔋", 3: "⚡", 4: "🔥", 5: "🚀"},
-            energyDay: {1: "📉", 2: "⚠️", 3: "📊", 4: "📈", 5: "🌪"},
-            mood: {1: "🤬", 2: "🌧", 3: "😐", 4: "😎", 5: "👑"}
-        };
-
-        // Обновление эмодзи при движении ползунка
-        function updateUI() {
-            document.getElementById('sleep-emoji').innerText = emojis.sleep[document.getElementById('sleep-slider').value];
-            document.getElementById('energy-emoji').innerText = emojis.energy[document.getElementById('energy-slider').value];
-            document.getElementById('energyday-emoji').innerText = emojis.energyDay[document.getElementById('energyday-slider').value];
-            document.getElementById('mood-emoji').innerText = emojis.mood[document.getElementById('mood-slider').value];
+        .theme-toggle {
+            background: var(--card-bg); border: 2px solid var(--card-border); border-bottom: 4px solid var(--card-border-bottom);
+            padding: 10px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;
         }
-        
-        // Вызываем один раз при загрузке страницы, чтобы поставить начальные эмодзи
-        updateUI();
+        .theme-toggle:active { border-bottom-width: 2px; transform: translateY(2px); }
 
-        // Загрузка начальных данных (вывод стрика)
-        window.onload = () => {
-            let userData = JSON.parse(localStorage.getItem('flow_tracker_data'));
-            if (userData) {
-                document.getElementById('streak-count').innerText = userData.streak || 0;
-            }
-        };
-
-        // ГЛАВНАЯ ФУНКЦИЯ: Расчет и вывод советов
-        function generateAnalysis() {
-            const sleep = parseInt(document.getElementById('sleep-slider').value);
-            const energy = parseInt(document.getElementById('energy-slider').value);
-            const energyDay = parseInt(document.getElementById('energyday-slider').value);
-            const mood = parseInt(document.getElementById('mood-slider').value);
-            const note = document.getElementById('note-input').value.trim();
-
-            // Работа с хранилищем (Стрики)
-            let userData = JSON.parse(localStorage.getItem('flow_tracker_data')) || { streak: 0, lastCheckinDate: null, history: [] };
-            const todayStr = new Date().toDateString();
-
-            const newRecord = {
-                date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
-                values: { sleep, energy, energyDay, mood },
-                note: note
-            };
-
-            if (userData.lastCheckinDate !== todayStr) {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                // Если заходил вчера, плюсуем стрик. Иначе сбрасываем на 1
-                userData.streak = (userData.lastCheckinDate === yesterday.toDateString()) ? userData.streak + 1 : 1;
-                userData.lastCheckinDate = todayStr;
-                userData.history.unshift(newRecord);
-                if (userData.history.length > 30) userData.history.pop();
-            } else {
-                userData.history[0] = newRecord; // Обновляем данные за сегодня
-            }
-            
-            localStorage.setItem('flow_tracker_data', JSON.stringify(userData));
-            document.getElementById('streak-count').innerText = userData.streak;
-
-            // Тексты Архитектора
-            const sleepTxt = [
-                "", 
-                "🛏 <b>Сон:</b> Полный системный сбой. Твоя цель — дожить до вечера.", 
-                "🛏 <b>Сон:</b> Ресурс в дефиците. Убери креатив, оставь только рутину.", 
-                "🛏 <b>Сон:</b> Базовый минимум. Сделай 15-мин паузу днем, чтобы не просесть.", 
-                "🛏 <b>Сон:</b> Отличное восстановление. Планируй самую сложную аналитику.", 
-                "🛏 <b>Сон:</b> Идеальный фундамент. Система заряжена на максимум."
-            ];
-            
-            const energyTxt = [
-                "", 
-                "🔋 <b>Раскачка:</b> Бак пуст. Начни с микро-шагов, не пытайся прыгнуть выше головы.", 
-                "🔋 <b>Раскачка:</b> Старт тяжелый. Контрастный душ и задачи на автопилоте.", 
-                "🔋 <b>Раскачка:</b> Ровный старт. Фокус на одной главной задаче до обеда.", 
-                "🔋 <b>Раскачка:</b> Мощный заряд. Хватайся за самую сложную задачу прямо сейчас.", 
-                "🔋 <b>Раскачка:</b> Адреналиновый взрыв! Направь этот ресурс в созидание."
-            ];
-            
-            const energyDayTxt = [
-                "", 
-                "📉 <b>День:</b> Прогноз — спад. Переходи в режим энергосбережения.", 
-                "📉 <b>День:</b> Запас низкий. Работай блоками 25/5, береги внимание.", 
-                "📊 <b>День:</b> Стабильное плато. Держи ровный темп, не перегорай на старте.", 
-                "📈 <b>День:</b> Продуктивность на высоте. Закрывай самые сложные долги.", 
-                "🚀 <b>День:</b> Режим Машины. Ты вытянешь двойную нагрузку сегодня."
-            ];
-            
-            const moodTxt = [
-                "", 
-                "🧠 <b>Менталка:</b> Критический стресс. Исключи токсичные контакты.", 
-                "🧠 <b>Менталка:</b> Серый фон. Опирайся на жесткую дисциплину.", 
-                "🧠 <b>Менталка:</b> Полный нейтралитет. Твой холодный прагматизм — твой главный актив.", 
-                "🧠 <b>Менталка:</b> Вайб на высоте. Идеальное время для встреч и переговоров.", 
-                "🧠 <b>Менталка:</b> Состояние потока (Flow). Люди сегодня пойдут за тобой."
-            ];
-
-            const adviceHTML = `
-                ${sleepTxt[sleep]}<br><br>
-                ${energyTxt[energy]}<br><br>
-                ${energyDayTxt[energyDay]}<br><br>
-                ${moodTxt[mood]}
-            `;
-
-            // Отрисовка результатов
-            document.getElementById('advice-content').innerHTML = adviceHTML;
-            document.getElementById('advice-block').style.display = 'block';
-            
-            // Визуальное подтверждение на кнопке
-            const btn = document.getElementById('save-btn');
-            btn.innerText = "ДАННЫЕ ОБНОВЛЕНЫ";
-            btn.style.background = "var(--neon-green)";
-            btn.style.color = "#000";
-            btn.style.boxShadow = "0 0 12px var(--neon-green)";
-            
-            // Вибрация (Haptic)
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-                window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-            }
-
-            // Плавный скролл вниз к ответу
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
-
-        // ФУНКЦИЯ ШЕРИНГА
-        function shareResult() {
-            const sleep = document.getElementById('sleep-slider').value;
-            const energy = document.getElementById('energy-slider').value;
-            const energyDay = document.getElementById('energyday-slider').value;
-            const mood = document.getElementById('mood-slider').value;
-
-            // Генератор шкалы из квадратиков
-            const getBar = (val) => "🟩".repeat(val) + "⬛".repeat(5 - val);
-
-            const shareText = 
-`⚡️ ПРОТОКОЛ FLOW-13 СГЕНЕРИРОВАН ⚡️
-
-📊 Мой системный статус на сегодня:
-🛏 Сон: ${getBar(sleep)} (${sleep}/5)
-🔋 Раскачка: ${getBar(energy)} (${energy}/5)
-📉 Баланс дня: ${getBar(energyDay)} (${energyDay}/5)
-🧠 Менталка: ${getBar(mood)} (${mood}/5)
-
-Оцифровал свой ресурс, чтобы не выгореть в NPC. 
-Запусти свой тест в приложении: t.me/log13bot`;
-
-            // Копируем в буфер
-            navigator.clipboard.writeText(shareText).then(() => {
-                // Вибрация
-                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                }
-                
-                // Меняем кнопку на зеленую
-                const shareBtn = document.getElementById('share-btn');
-                shareBtn.innerText = "📋 ТЕКСТ СКОПИРОВАН! СДЕЛАЙ СТОРИС";
-                shareBtn.style.background = "var(--neon-green)";
-                shareBtn.style.color = "#000";
-                shareBtn.style.boxShadow = "0 0 12px var(--neon-green)";
-
-                // Пытаемся открыть окно "Поделиться" в самом ТГ
-                if (window.Telegram && window.Telegram.WebApp) {
-                    setTimeout(() => {
-                        window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=https://t.me/log13bot&text=Я%20прошел%20тест%20продуктивности%20FLOW-13.%20Мой%20ресурс%20оцифрован.`);
-                    }, 1000);
-                } else {
-                    alert("Текст статуса скопирован в буфер! Закидывай его в Инсту или ТГ.");
-                }
-            }).catch(err => {
-                console.error("Ошибка копирования: ", err);
-                alert("Не удалось скопировать. Убедись, что выдал разрешения браузеру.");
-            });
-        }
-    </script>
-</body>
-</html>
+        h1 { font-size: 24px; font-weight: 900; margin: 0 0 5px 0; }
+        .page-subtitle { margin: 0 0 20px 0; color: var
