@@ -1,90 +1,123 @@
-        function generateAnalysis() {
-            const sleep = parseInt(document.getElementById('sleep-slider').value);
-            const energy = parseInt(document.getElementById('energy-slider').value);
-            const energyDay = parseInt(document.getElementById('energyday-slider').value);
-            const mood = parseInt(document.getElementById('mood-slider').value);
-            const note = document.getElementById('note-input').value.trim();
+function generateAnalysis() {
+    // 1. Безопасное получение элементов (защита от краша)
+    const sleepSlider = document.getElementById('sleep-slider');
+    const energySlider = document.getElementById('energy-slider');
+    const energyDaySlider = document.getElementById('energyday-slider');
+    const moodSlider = document.getElementById('mood-slider');
+    const noteInput = document.getElementById('note-input');
 
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    if (!sleepSlider || !energySlider || !energyDaySlider || !moodSlider || !noteInput) {
+        console.error("FLOW-13 ERROR: Элементы ползунков не найдены в DOM.");
+        return;
+    }
 
-            // --- БЛОК СОХРАНЕНИЯ ДАННЫХ (Остается без изменений) ---
-            const todayStr = new Date().toDateString();
-            const now = new Date();
-            const newRecord = {
-                date: `${now.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'})}`,
-                fullDate: `${now.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'})}, ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
-                emojis: [emojis.sleep[sleep], emojis.energy[energy], emojis.energyday[energyDay], emojis.mood[mood]],
-                values: { sleep, energy, energyDay, mood },
-                note: note
-            };
+    const sleep = parseInt(sleepSlider.value);
+    const energy = parseInt(energySlider.value);
+    const energyDay = parseInt(energyDaySlider.value);
+    const mood = parseInt(moodSlider.value);
+    const note = noteInput.value.trim();
 
-            if (userData.lastCheckinDate === todayStr && userData.history.length > 0) {
-                userData.history[0] = newRecord;
-            } else {
-                if (userData.lastCheckinDate) {
-                    const diffDays = Math.ceil(Math.abs(new Date(todayStr) - new Date(userData.lastCheckinDate)) / (1000 * 60 * 60 * 24));
-                    if (diffDays === 1) userData.streak += 1;
-                    else if (diffDays > 1) userData.streak = 1;
-                } else userData.streak = 1;
-                
-                userData.lastCheckinDate = todayStr;
-                userData.history.unshift(newRecord);
-                document.getElementById('streak-count').innerText = userData.streak;
-            }
+    // 2. Безопасный вызов Haptic Feedback (не сломается в обычном браузере вне ТГ)
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+    }
 
-            localStorage.setItem('flow_tracker_data', JSON.stringify(userData));
+    // --- БЛОК СОХРАНЕНИЯ ДАННЫХ ---
+    let userData = JSON.parse(localStorage.getItem('flow_tracker_data')) || { streak: 0, lastCheckinDate: null, history: [] };
+    
+    const now = new Date();
+    const todayStr = now.toDateString();
+    
+    // Форматирование даты
+    const dateOpts = { day: 'numeric', month: 'short' };
+    const timeOpts = { hour: '2-digit', minute:'2-digit' };
+    
+    const newRecord = {
+        date: now.toLocaleDateString('ru-RU', dateOpts),
+        fullDate: `${now.toLocaleDateString('ru-RU', dateOpts)}, ${now.toLocaleTimeString('ru-RU', timeOpts)}`,
+        emojis: [emojis.sleep[sleep], emojis.energy[energy], emojis.energyday[energyDay], emojis.mood[mood]],
+        values: { sleep, energy, energyDay, mood },
+        note: note
+    };
 
-            // --- НОВЫЙ БЛОК: УМНЫЙ КОНСТРУКТОР СОВЕТОВ ---
-            let advice = "";
-
-            // 1. АНАЛИЗ СНА
-            const sleepAdvices = {
-                1: "🛏 **Сон:** Полный системный сбой. Твоя единственная цель сегодня — дожить до вечера без передозировки кофеином. Никаких тяжелых тренировок и сложных решений. Отбой строго до 22:00.",
-                2: "🛏 **Сон:** Ресурс в дефиците. Организм восстановился лишь наполовину. Убери из расписания задачи, требующие креатива, оставь только механическую рутину, чтобы не сжечь остатки сил.",
-                3: "🛏 **Сон:** Базовый минимум. Ты не разбит, но и не на пике. Пей больше воды и обязательно сделай 15-минутную паузу в полной тишине днем, чтобы не просесть к вечеру.",
-                4: "🛏 **Сон:** Отличное восстановление. Мозг готов к сложным задачам. Планируй тяжелую аналитическую работу на первую половину дня, пока нейронные связи работают на 100%.",
-                5: "🛏 **Сон:** Идеальный фундамент. Система заряжена на максимум. Сегодня тот самый день, когда можно и нужно брать на себя самые сложные вызовы. Твое тело тебя не подведет."
-            };
-            advice += sleepAdvices[sleep] + "<br><br>";
-
-            // 2. АНАЛИЗ ЭНЕРГИИ СЕЙЧАС (УТРО)
-            const energyAdvices = {
-                1: "🔋 **Раскачка:** Бак пуст. Не пытайся сразу 'съесть лягушку', ты только словишь апатию. Начни с простейших микро-шагов (заправить кровать, стакан воды), плавно входи в ритм.",
-                2: "🔋 **Раскачка:** Старт тяжелый. Сделай контрастный душ или легкую разминку, чтобы разогнать кровь. Первой задачей ставь то, что делается на автопилоте без участия силы воли.",
-                3: "🔋 **Раскачка:** Ровный старт. Батарейка в норме. Выбери одну главную задачу на день и сфокусируйся на ней до обеда, не распыляясь на мелочи.",
-                4: "🔋 **Раскачка:** Мощный заряд. Фокус на максимуме. Хватайся за самую сложную и неприятную задачу прямо сейчас, пока этот пик продуктивности не прошел.",
-                5: "🔋 **Раскачка:** Адреналиновый взрыв! Ты можешь свернуть горы. Направь эту энергию в созидание, но не забудь плотно поесть, чтобы не словить резкий откат через пару часов."
-            };
-            advice += energyAdvices[energy] + "<br><br>";
-
-            // 3. АНАЛИЗ ДНЕВНОГО ТОНУСА (ПРОГНОЗ)
-            const energyDayAdvices = {
-                1: "📉 **День:** Прогноз негативный. Ожидается жесткий спад. Делегируй всё, что можно, отмени несрочные встречи. Твоя задача — режим энергосбережения.",
-                2: "📉 **День:** Запас прочности низкий. Работай блоками: 25 минут фокуса, затем 5 минут полного отключения (без телефона). Иначе к вечеру превратишься в NPC.",
-                3: "📊 **День:** Стабильное плато. Сил хватит на стандартный день. Держи ровный темп, не перегорай на старте и соблюдай режим питания.",
-                4: "📈 **День:** Продуктивность на высоте. Сегодня ты можешь закрыть задачи целой недели. Ставь амбициозные цели на вторую половину дня, у тебя хватит на них запала.",
-                5: "🚀 **День:** Режим Машины. Ты вытянешь двойную нагрузку. Идеальный день для запуска проектов, хардкорного закрытия дедлайнов и тренировок."
-            };
-            advice += energyDayAdvices[energyDay] + "<br><br>";
-
-            // 4. АНАЛИЗ НАСТРОЕНИЯ
-            const moodAdvices = {
-                1: "🧠 **Менталка:** Критический уровень стресса или апатии. Исключи токсичные контакты. Не принимай важных решений — мозг сейчас на эмоциях, а не на логике.",
-                2: "🧠 **Менталка:** Серый фон. Мотивации нет, и это нормально. Опирайся на жесткую дисциплину, а не на вдохновение. Сделай минимум и похвали себя за это.",
-                3: "🧠 **Менталка:** Полный нейтралитет. Идеальная почва для работы. Никаких эмоциональных качелей — чистый, холодный прагматизм.",
-                4: "🧠 **Менталка:** Вайб на высоте. Твоя харизма сегодня работает на тебя. Отличное время для переговоров, встреч, записи контента и креативного брейншторма.",
-                5: "🧠 **Менталка:** Состояние потока (Flow). Ты излучаешь уверенность. Транслируй эту энергию, общайся, делись идеями — сегодня люди пойдут за тобой."
-            };
-            advice += moodAdvices[mood];
-
-            // Отрисовка на экране
-            document.getElementById('advice-content').innerHTML = advice.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-            document.getElementById('advice-block').style.display = 'block';
-
-            const saveBtn = document.getElementById('save-btn');
-            saveBtn.innerText = "ДАННЫЕ ОБНОВЛЕНЫ";
-            saveBtn.style.background = "var(--green)";
-            saveBtn.style.borderBottomColor = "var(--green-shadow)";
-
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    // Логика обновления и стриков
+    if (userData.lastCheckinDate === todayStr && userData.history.length > 0) {
+        userData.history[0] = newRecord;
+    } else {
+        if (userData.lastCheckinDate) {
+            const lastDate = new Date(userData.lastCheckinDate);
+            // Правильный подсчет разницы в днях с обнулением времени
+            lastDate.setHours(0,0,0,0);
+            const todayDate = new Date();
+            todayDate.setHours(0,0,0,0);
+            
+            const diffDays = Math.round((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) userData.streak += 1;
+            else if (diffDays > 1) userData.streak = 1;
+        } else {
+            userData.streak = 1;
         }
+        
+        userData.lastCheckinDate = todayStr;
+        userData.history.unshift(newRecord);
+        
+        const streakEl = document.getElementById('streak-count');
+        if (streakEl) streakEl.innerText = userData.streak;
+    }
+
+    localStorage.setItem('flow_tracker_data', JSON.stringify(userData));
+
+    // --- УМНЫЙ КОНСТРУКТОР СОВЕТОВ ---
+    const sleepAdvices = {
+        1: "🛏 **Сон:** Полный системный сбой. Твоя единственная цель сегодня — дожить до вечера без передозировки кофеином. Никаких тяжелых тренировок и сложных решений. Отбой строго до 22:00.",
+        2: "🛏 **Сон:** Ресурс в дефиците. Организм восстановился лишь наполовину. Убери из расписания задачи, требующие креатива, оставь только механическую рутину, чтобы не сжечь остатки сил.",
+        3: "🛏 **Сон:** Базовый минимум. Ты не разбит, но и не на пике. Пей больше воды и обязательно сделай 15-минутную паузу в полной тишине днем, чтобы не просесть к вечеру.",
+        4: "🛏 **Сон:** Отличное восстановление. Мозг готов к сложным задачам. Планируй тяжелую аналитическую работу на первую половину дня, пока нейронные связи работают на 100%.",
+        5: "🛏 **Сон:** Идеальный фундамент. Система заряжена на максимум. Сегодня тот самый день, когда можно и нужно брать на себя самые сложные вызовы. Твое тело тебя не подведет."
+    };
+
+    const energyAdvices = {
+        1: "🔋 **Раскачка:** Бак пуст. Не пытайся сразу 'съесть лягушку', ты только словишь апатию. Начни с простейших микро-шагов (заправить кровать, стакан воды), плавно входи в ритм.",
+        2: "🔋 **Раскачка:** Старт тяжелый. Сделай контрастный душ или легкую разминку, чтобы разогнать кровь. Первой задачей ставь то, что делается на автопилоте без участия силы воли.",
+        3: "🔋 **Раскачка:** Ровный старт. Батарейка в норме. Выбери одну главную задачу на день и сфокусируйся на ней до обеда, не распыляясь на мелочи.",
+        4: "🔋 **Раскачка:** Мощный заряд. Фокус на максимуме. Хватайся за самую сложную и неприятную задачу прямо сейчас, пока этот пик продуктивности не прошел.",
+        5: "🔋 **Раскачка:** Адреналиновый взрыв! Ты можешь свернуть горы. Направь эту энергию в созидание, но не забудь плотно поесть, чтобы не словить резкий откат через пару часов."
+    };
+
+    const energyDayAdvices = {
+        1: "📉 **День:** Прогноз негативный. Ожидается жесткий спад. Делегируй всё, что можно, отмени несрочные встречи. Твоя задача — режим энергосбережения.",
+        2: "📉 **День:** Запас прочности низкий. Работай блоками: 25 минут фокуса, затем 5 минут полного отключения (без телефона). Иначе к вечеру превратишься в NPC.",
+        3: "📊 **День:** Стабильное плато. Сил хватит на стандартный день. Держи ровный темп, не перегорай на старте и соблюдай режим питания.",
+        4: "📈 **День:** Продуктивность на высоте. Сегодня ты можешь закрыть задачи целой недели. Ставь амбициозные цели на вторую половину дня, у тебя хватит на них запала.",
+        5: "🚀 **День:** Режим Машины. Ты вытянешь двойную нагрузку. Идеальный день для запуска проектов, хардкорного закрытия дедлайнов и тренировок."
+    };
+
+    const moodAdvices = {
+        1: "🧠 **Менталка:** Критический уровень стресса или апатии. Исключи токсичные контакты. Не принимай важных решений — мозг сейчас на эмоциях, а не на логике.",
+        2: "🧠 **Менталка:** Серый фон. Мотивации нет, и это нормально. Опирайся на жесткую дисциплину, а не на вдохновение. Сделай минимум и похвали себя за это.",
+        3: "🧠 **Менталка:** Полный нейтралитет. Идеальная почва для работы. Никаких эмоциональных качелей — чистый, холодный прагматизм.",
+        4: "🧠 **Менталка:** Вайб на высоте. Твоя харизма сегодня работает на тебя. Отличное время для переговоров, встреч, записи контента и креативного брейншторма.",
+        5: "🧠 **Менталка:** Состояние потока (Flow). Ты излучаешь уверенность. Транслируй эту энергию, общайся, делись идеями — сегодня люди пойдут за тобой."
+    };
+
+    // Сборка финального совета
+    const advice = `${sleepAdvices[sleep]}<br><br>${energyAdvices[energy]}<br><br>${energyDayAdvices[energyDay]}<br><br>${moodAdvices[mood]}`;
+
+    // --- ОТРИСОВКА НА ЭКРАНЕ ---
+    const adviceContent = document.getElementById('advice-content');
+    const adviceBlock = document.getElementById('advice-block');
+    const saveBtn = document.getElementById('save-btn');
+
+    if (adviceContent && adviceBlock && saveBtn) {
+        adviceContent.innerHTML = advice.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        adviceBlock.style.display = 'block';
+
+        saveBtn.innerText = "ДАННЫЕ ОБНОВЛЕНЫ";
+        saveBtn.style.background = "var(--green)";
+        saveBtn.style.borderBottomColor = "var(--green-shadow)";
+    }
+
+    // Плавный скролл к результату
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
