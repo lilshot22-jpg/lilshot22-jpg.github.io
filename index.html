@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Energy Tracker Pro & History</title>
+    <title>Energy Tracker Pro & Stats</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <style>
-        /* Базовые переменные для СВЕТЛОЙ темы */
         :root {
             --bg-color: #f3f6fc;
             --text-main: #333333;
@@ -25,9 +25,9 @@
             --advice-bg: #f9e7ff;
             --advice-text: #4a148c;
             --nav-bg: #ffffff;
+            --chart-grid: #e0e0e0;
         }
 
-        /* Переменные для ТЕМНОЙ темы */
         [data-theme="dark"] {
             --bg-color: #131926;
             --text-main: #ffffff;
@@ -42,6 +42,7 @@
             --advice-bg: #2e1a47;
             --advice-text: #f3e8ff;
             --nav-bg: #202938;
+            --chart-grid: #374151;
         }
 
         * { box-sizing: border-box; font-family: 'Nunito', sans-serif; transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
@@ -69,11 +70,10 @@
         h1 { font-size: 24px; font-weight: 900; margin: 0 0 5px 0; }
         .page-subtitle { margin: 0 0 20px 0; color: var(--text-muted); font-size: 15px; font-weight: 600; }
 
-        /* ЭКРАНЫ И ТАБЫ */
         .page { display: none; }
         .page.active { display: block; }
 
-        .question-card {
+        .question-card, .chart-card {
             background: var(--card-bg); border-radius: 24px; padding: 20px;
             border: 2px solid var(--card-border); border-bottom: 6px solid var(--card-border-bottom);
             margin-bottom: 20px; position: relative;
@@ -118,10 +118,9 @@
             padding: 20px; margin-top: 25px; text-align: left;
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .advice-title { font-weight: 900; font-size: 18px; color: var(--primary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .advice-text { font-size: 15px; font-weight: 600; line-height: 1.5; color: var(--advice-text); }
+        .advice-title { font-weight: 900; font-size: 18px; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .advice-text { font-size: 15px; font-weight: 600; line-height: 1.6; color: var(--advice-text); white-space: pre-line; }
 
-        /* ЭЛЕМЕНТЫ В КЛЕНТЕ ИСТОРИИ */
         .history-item {
             background: var(--card-bg); border-radius: 20px; padding: 15px;
             border: 2px solid var(--card-border); border-bottom: 4px solid var(--card-border-bottom);
@@ -132,7 +131,6 @@
         .history-note { font-size: 15px; font-weight: 600; font-style: italic; opacity: 0.9; border-left: 3px solid var(--primary); padding-left: 8px; margin-top: 5px; }
         .empty-history { text-align: center; color: var(--text-muted); font-weight: 800; margin-top: 40px; }
 
-        /* НИЖНЯЯ НАВИГАЦИЯ (НАВИГАЦИОННЫЙ БАР) */
         .navbar {
             position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
             background: var(--nav-bg); border-top: 2px solid var(--card-border);
@@ -167,63 +165,57 @@
         <div class="question-card">
             <div class="question-title">Как ты спал сегодня ночью?</div>
             <div class="value-display" id="sleep-emoji">😐</div>
-            <div class="slider-container">
-                <input type="range" min="1" max="5" value="3" class="custom-slider" id="sleep-slider" oninput="updateSlider('sleep')">
-            </div>
+            <div class="slider-container"><input type="range" min="1" max="5" value="3" class="custom-slider" id="sleep-slider" oninput="updateSlider('sleep')"></div>
         </div>
 
         <div class="question-card">
             <div class="question-title">Уровень энергии прямо сейчас?</div>
             <div class="value-display" id="energy-emoji">⚡</div>
-            <div class="slider-container">
-                <input type="range" min="1" max="5" value="3" class="custom-slider" id="energy-slider" oninput="updateSlider('energy')">
-            </div>
+            <div class="slider-container"><input type="range" min="1" max="5" value="3" class="custom-slider" id="energy-slider" oninput="updateSlider('energy')"></div>
         </div>
 
         <div class="question-card">
-            <div class="question-title">Запас энергии на день (продуктивность)?</div>
+            <div class="question-title">Запас энергии на день (прогноз)?</div>
             <div class="value-display" id="energyday-emoji">🌤️</div>
-            <div class="slider-container">
-                <input type="range" min="1" max="5" value="3" class="custom-slider" id="energyday-slider" oninput="updateSlider('energyday')">
-            </div>
+            <div class="slider-container"><input type="range" min="1" max="5" value="3" class="custom-slider" id="energyday-slider" oninput="updateSlider('energyday')"></div>
         </div>
 
         <div class="question-card">
-            <div class="question-title">Какое у тебя сейчас настроение?</div>
+            <div class="question-title">Какое у тебя настроение?</div>
             <div class="value-display" id="mood-emoji">😐</div>
-            <div class="slider-container">
-                <input type="range" min="1" max="5" value="3" class="custom-slider" id="mood-slider" oninput="updateSlider('mood')">
-            </div>
+            <div class="slider-container"><input type="range" min="1" max="5" value="3" class="custom-slider" id="mood-slider" oninput="updateSlider('mood')"></div>
         </div>
 
         <div class="question-card">
-            <div class="question-title">Что на тебя повлияло? (Заметка)</div>
-            <textarea id="note-input" placeholder="Опиши коротко главную причину состояния..."></textarea>
+            <div class="question-title">Что на тебя повлияло?</div>
+            <textarea id="note-input" placeholder="Короткая заметка о состоянии..."></textarea>
         </div>
 
         <button class="main-btn" id="save-btn" onclick="saveAndAnalyze()">АНАЛИЗИРОВАТЬ ДЕНЬ</button>
 
         <div class="advice-card" id="advice-block">
-            <div class="advice-title">💡 Персональный совет от FLOW:</div>
-            <div class="advice-text" id="advice-content">Загрузка данных...</div>
+            <div class="advice-title">💡 Персональный разбор от FLOW:</div>
+            <div class="advice-text" id="advice-content"></div>
         </div>
     </div>
 
     <div id="page-history" class="page">
-        <h1>Твоя история</h1>
-        <div class="page-subtitle">Динамика твоих состояний за прошлые дни</div>
-        <div id="history-list">
-            </div>
+        <h1>Твоя статистика</h1>
+        <div class="page-subtitle">Динамика твоих состояний (последние 7 дней)</div>
+        
+        <div class="chart-card">
+            <canvas id="statsChart"></canvas>
+        </div>
+
+        <div id="history-list"></div>
     </div>
 
     <div class="navbar">
         <button class="nav-item active" onclick="switchPage('checkin', this)">
-            <span class="icon">📝</span>
-            <span>Чек-ин</span>
+            <span class="icon">📝</span><span>Чек-ин</span>
         </button>
         <button class="nav-item" onclick="switchPage('history', this)">
-            <span class="icon">📊</span>
-            <span>История</span>
+            <span class="icon">📊</span><span>Статистика</span>
         </button>
     </div>
 
@@ -238,14 +230,9 @@
             mood: { 1: "🤬", 2: "😔", 3: "😐", 4: "🙂", 5: "🥰" }
         };
 
-        // Инициализация структуры данных из localStorage
-        let userData = JSON.parse(localStorage.getItem('flow_tracker_data')) || {
-            streak: 0,
-            lastCheckinDate: null,
-            history: []
-        };
+        let userData = JSON.parse(localStorage.getItem('flow_tracker_data')) || { streak: 0, lastCheckinDate: null, history: [] };
+        let chartInstance = null; // Храним объект графика
 
-        // Запуск интерфейса темы и стриков
         let currentTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', currentTheme);
         updateThemeUI();
@@ -256,42 +243,32 @@
             document.documentElement.setAttribute('data-theme', currentTheme);
             localStorage.setItem('theme', currentTheme);
             updateThemeUI();
+            if (chartInstance) renderChart(); // Перерисовываем график под новую тему
             if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
         }
 
         function updateThemeUI() {
             const btn = document.getElementById('theme-btn');
-            if (currentTheme === 'light') {
-                btn.innerText = "☀️";
-                tg.setHeaderColor('#f3f6fc');
-            } else {
-                btn.innerText = "🌙";
-                tg.setHeaderColor('#131926');
-            }
+            if (currentTheme === 'light') { btn.innerText = "☀️"; tg.setHeaderColor('#f3f6fc'); } 
+            else { btn.innerText = "🌙"; tg.setHeaderColor('#131926'); }
         }
 
         function updateSlider(type) {
             const slider = document.getElementById(`${type}-slider`);
-            const emojiDisplay = document.getElementById(`${type}-emoji`);
-            emojiDisplay.innerText = emojis[type][slider.value];
+            document.getElementById(`${type}-emoji`).innerText = emojis[type][slider.value];
             if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
         }
 
-        // Переключение вкладок приложения
         function switchPage(pageId, btnElement) {
             if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-
-            // Переключаем активный экран
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(`page-${pageId}`).classList.add('active');
-
-            // Переключаем активную кнопку в навигации
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
 
-            // Если зашли в историю — обновляем ее список элементов
             if (pageId === 'history') {
                 renderHistory();
+                renderChart();
             }
         }
 
@@ -304,58 +281,48 @@
 
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
 
-            // 1. Считаем стрик дней
             const todayStr = new Date().toDateString();
             if (userData.lastCheckinDate !== todayStr) {
                 if (userData.lastCheckinDate) {
-                    const lastDate = new Date(userData.lastCheckinDate);
-                    const diffTime = Math.abs(new Date(todayStr) - lastDate);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (diffDays === 1) {
-                        userData.streak += 1;
-                    } else if (diffDays > 1) {
-                        userData.streak = 1; // стрик сгорел
-                    }
-                } else {
-                    userData.streak = 1; // первая отметка в истории
-                }
+                    const diffDays = Math.ceil(Math.abs(new Date(todayStr) - new Date(userData.lastCheckinDate)) / (1000 * 60 * 60 * 24));
+                    if (diffDays === 1) userData.streak += 1;
+                    else if (diffDays > 1) userData.streak = 1;
+                } else userData.streak = 1;
                 userData.lastCheckinDate = todayStr;
                 document.getElementById('streak-count').innerText = userData.streak;
             }
 
-            // 2. Добавляем запись в массив истории (в начало списка)
             const now = new Date();
-            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const dateStr = now.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'});
-
             const newRecord = {
-                date: `${dateStr}, ${timeStr}`,
+                date: `${now.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'})}`,
+                fullDate: `${now.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'})}, ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
                 emojis: [emojis.sleep[sleep], emojis.energy[energy], emojis.energyday[energyDay], emojis.mood[mood]],
+                values: { sleep, energy, energyDay, mood }, // Сохраняем сырые данные для графика
                 note: note
             };
+            
             userData.history.unshift(newRecord);
-
-            // Сохраняем в постоянную память телефона
             localStorage.setItem('flow_tracker_data', JSON.stringify(userData));
 
-            // 3. Вызываем алгоритм анализа и совета
+            // УМНАЯ МОДУЛЬНАЯ ГЕНЕРАЦИЯ СОВЕТОВ
             let advice = "";
-            if (mood <= 2 && energyDay <= 2) {
-                advice = "Бро, сегодня сложный день. Энергия днем на нуле, а настроение на спаде. Не требуй от себя подвигов. Сфокусируйся на рутине, которая не сжигает ресурсы. Ограничь токсичное общение и вечером порадуй себя любимой едой или фильмом.";
-            } else if (mood <= 2 && energyDay >= 4) {
-                advice = "Интересный контраст: сил вагон, но настроение паршивое. Это идеальный момент, чтобы направить внутреннее напряжение в фокус и работу! Мощный рабочий спринт поможет разгрузить голову и вернет позитив.";
-            } else if (mood >= 4 && energyDay <= 2) {
-                advice = "Настроение отличное, а вот тело не везет. Ты на чистом позитиве! Чтобы не растерять этот вайб, не перегружай себя физически. Проведи день в кайф: общайся, генерируй идеи, но тяжелую работу отложи.";
-            } else if (sleep >= 4 && energy >= 4 && energyDay >= 4 && mood >= 4) {
-                advice = "Абсолютный джекпот! Все показатели на максимуме. Ты в идеальном ментальном и физическом балансе. Лови эту волну продуктивности: сегодня можно закрыть задачи целой недели.";
-            } else {
-                advice = "Твои показатели в норме. Стабильный, хороший день без резких перепадовресурсов. Чтобы сохранить этот баланс до самого вечера, делай короткие перерывы по 5 минут и пей чистую воду.";
-            }
 
-            const adviceBlock = document.getElementById('advice-block');
-            document.getElementById('advice-content').innerText = advice;
-            adviceBlock.style.display = 'block';
+            if (sleep <= 2) advice += "🛏 **Сон:** Организм не восстановился. Нервная система истощена. Никаких энергетиков после 14:00, отмени вечерние тренировки и ложись сегодня до 23:00.\n\n";
+            else if (sleep === 3) advice += "🛏 **Сон:** Базовое восстановление пройдено, но старайся не накапливать дефицит сна.\n\n";
+            else advice += "🛏 **Сон:** Идеально! База для мощного продуктивного дня заложена.\n\n";
+
+            if (energy <= 2) advice += "🔋 **Утро:** Раскачка идет тяжело. Не хватайся сразу за сложные задачи, начни с легкой рутины, чтобы плавно войти в ритм.\n\n";
+            else if (energy >= 4) advice += "🔋 **Утро:** Бодрый старт! Используй этот утренний пик фокуса для самой сложной задачи дня («съешь лягушку» прямо сейчас).\n\n";
+
+            if (energyDay <= 2) advice += "📉 **День:** Запас сил минимальный. Обязательно делегируй то, что можно, и делай микро-паузы каждые 45 минут. Не планируй подвигов.\n\n";
+            else if (energyDay >= 4) advice += "📈 **День:** Батарейка заряжена плотно. Ты сможешь держать фокус долго, смело ставь амбициозные цели на вторую половину дня.\n\n";
+
+            if (mood <= 2) advice += "🧠 **Настроение:** Эмоциональный фон просел. Сведи к минимуму общение с токсичными людьми и вечером сделай что-то исключительно для себя.\n";
+            else if (mood >= 4) advice += "🧠 **Настроение:** Вайб на высоте! Харизма работает на 100%, сегодня лучший день для переговоров, встреч и креатива.\n";
+            else advice += "🧠 **Настроение:** Ровный, стабильный эмоциональный фон. Отличная почва для спокойной работы.\n";
+
+            document.getElementById('advice-content').innerHTML = advice.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            document.getElementById('advice-block').style.display = 'block';
 
             const saveBtn = document.getElementById('save-btn');
             saveBtn.innerText = "ДАННЫЕ СОХРАНЕНЫ";
@@ -365,27 +332,67 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
-        // Отрисовка списка записей на вкладке истории
         function renderHistory() {
             const listContainer = document.getElementById('history-list');
             listContainer.innerHTML = '';
-
             if (userData.history.length === 0) {
-                listContainer.innerHTML = '<div class="empty-history">Тут пока пусто.<br>Сделай свой первый чек-ин на соседней вкладке! 📝</div>';
+                listContainer.innerHTML = '<div class="empty-history">Тут пока пусто.<br>Сделай первый чек-ин на соседней вкладке! 📝</div>';
                 return;
             }
-
             userData.history.forEach(item => {
                 let noteHTML = item.note ? `<div class="history-note">💬 ${item.note}</div>` : '';
                 listContainer.innerHTML += `
                     <div class="history-item">
-                        <div class="history-date">📅 ${item.date}</div>
-                        <div class="history-emojis">
-                            ${item.emojis.join(' ')}
-                        </div>
+                        <div class="history-date">📅 ${item.fullDate || item.date}</div>
+                        <div class="history-emojis">${item.emojis.join(' ')}</div>
                         ${noteHTML}
-                    </div>
-                `;
+                    </div>`;
+            });
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            
+            // Берем последние 7 записей и переворачиваем для хронологии (слева направо)
+            const recentData = userData.history.slice(0, 7).reverse();
+            
+            // Фильтруем данные: используем только те, где есть объект 'values' (защита от старых записей)
+            const validData = recentData.filter(item => item.values);
+
+            if (validData.length === 0) return; // Нет данных для графика
+
+            const labels = validData.map(item => item.date.split(',')[0]);
+            const sleepData = validData.map(item => item.values.sleep);
+            const energyData = validData.map(item => item.values.energy);
+            const moodData = validData.map(item => item.values.mood);
+
+            // Цвета для линий графика
+            const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim();
+            const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+
+            if (chartInstance) chartInstance.destroy(); // Удаляем старый график перед отрисовкой нового
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Сон', data: sleepData, borderColor: '#3498db', backgroundColor: '#3498db', tension: 0.4, borderWidth: 3, pointRadius: 4 },
+                        { label: 'Утро', data: energyData, borderColor: '#f1c40f', backgroundColor: '#f1c40f', tension: 0.4, borderWidth: 3, pointRadius: 4 },
+                        { label: 'Настроение', data: moodData, borderColor: '#e74c3c', backgroundColor: '#e74c3c', tension: 0.4, borderWidth: 3, pointRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: textColor, font: { family: 'Nunito', weight: 'bold' } } }
+                    },
+                    scales: {
+                        y: { min: 1, max: 5, ticks: { stepSize: 1, color: textColor }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor }, grid: { color: gridColor } }
+                    }
+                }
             });
         }
     </script>
