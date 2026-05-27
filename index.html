@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLOW-13 // LIFE DIARY V8</title>
+    <title>FLOW-13 // LIFE DIARY V9</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -71,7 +71,7 @@
         input:checked + .slider-switch:before { transform: translateX(18px); }
 
         /* Поля ввода */
-        .ios-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 16px; outline: none; margin-bottom: 10px; font-family: var(--font-sans); }
+        .ios-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 16px; outline: none; margin-bottom: 10px; font-family: var(--font-sans); box-sizing: border-box; }
         textarea.ios-input { resize: vertical; min-height: 80px; }
         select.ios-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>"); background-repeat: no-repeat; background-position-x: 95%; background-position-y: 50%; }
 
@@ -104,8 +104,9 @@
         .app-screen.active { display: block; }
         
         /* Сетка для времени */
-        .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
-        .time-col { display: flex; flex-direction: column; }
+        .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+        .time-col { display: flex; flex-direction: column; align-items: center; }
+        .time-col input[type="time"] { text-align: center; margin-bottom: 0; padding: 12px 5px; } /* Центрирование времени */
     </style>
 </head>
 <body>
@@ -121,6 +122,7 @@
 
     <div class="container">
 
+        <!-- ЭКРАН 1: ГЛАВНЫЙ -->
         <div id="screen-main" class="app-screen active">
             
             <div class="card">
@@ -128,11 +130,11 @@
                 <div class="time-grid">
                     <div class="time-col">
                         <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 6px;">Отбой</div>
-                        <input type="time" id="sleep-time" class="ios-input" style="margin-bottom: 0;" onchange="updateAppValue('sleepTime', this.value)">
+                        <input type="time" id="sleep-time" class="ios-input" onchange="updateAppValue('sleepTime', this.value)">
                     </div>
                     <div class="time-col">
                         <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 6px;">Подъем</div>
-                        <input type="time" id="wake-time" class="ios-input" style="margin-bottom: 0;" onchange="updateAppValue('wakeTime', this.value)">
+                        <input type="time" id="wake-time" class="ios-input" onchange="updateAppValue('wakeTime', this.value)">
                     </div>
                 </div>
                 <button class="secondary-btn" onclick="scheduleNotification()">Включить автооповещение</button>
@@ -172,8 +174,8 @@
             </div>
 
             <div class="card">
-                <div class="card-label">🧠 Главный фокус</div>
-                <textarea id="input-diary" class="ios-input" placeholder="Главная задача на день. Заметки. Инсайты." oninput="updateAppValue('diary', this.value)"></textarea>
+                <div class="card-label">🧠 Задача дня</div>
+                <textarea id="input-diary" class="ios-input" placeholder="Главная задача на день. Что нужно обязательно сделать?" oninput="updateAppValue('diary', this.value)"></textarea>
             </div>
 
             <div class="card">
@@ -188,24 +190,45 @@
             <button class="main-btn" onclick="saveDay()">Зафиксировать день</button>
         </div>
 
+        <!-- ЭКРАН 2: ПИТАНИЕ (ТРЕКИНГ КБЖУ ВОССТАНОВЛЕН) -->
         <div id="screen-food" class="app-screen">
             <h2 class="screen-title">Питание</h2>
             <div class="card">
-                <div class="card-label">КБЖУ и Рацион</div>
-                <div style="text-align: center; color: var(--text-sub); font-size: 14px; margin-bottom: 15px;">
-                    (Модуль трекинга калорий в разработке)
+                <div class="card-label">КБЖУ Трекер</div>
+                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                    <div style="flex: 1; text-align: center;">
+                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Ккал</div>
+                        <input type="number" id="input-kcal" class="ios-input" style="text-align: center; margin-bottom: 0; padding: 12px 4px;" placeholder="0" oninput="updateAppValue('kcal', this.value)">
+                    </div>
+                    <div style="flex: 1; text-align: center;">
+                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Белки</div>
+                        <input type="number" id="input-protein" class="ios-input" style="text-align: center; margin-bottom: 0; padding: 12px 4px;" placeholder="0" oninput="updateAppValue('protein', this.value)">
+                    </div>
+                    <div style="flex: 1; text-align: center;">
+                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Жиры</div>
+                        <input type="number" id="input-fat" class="ios-input" style="text-align: center; margin-bottom: 0; padding: 12px 4px;" placeholder="0" oninput="updateAppValue('fat', this.value)">
+                    </div>
+                    <div style="flex: 1; text-align: center;">
+                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Углеводы</div>
+                        <input type="number" id="input-carbs" class="ios-input" style="text-align: center; margin-bottom: 0; padding: 12px 4px;" placeholder="0" oninput="updateAppValue('carbs', this.value)">
+                    </div>
                 </div>
-                <div class="tip-box" style="margin-top: 0;">
+
+                <div class="card-label">Рацион</div>
+                <textarea id="input-food-list" class="ios-input" placeholder="Что было съедено за день? Запиши приемы пищи." oninput="updateAppValue('foodList', this.value)"></textarea>
+
+                <div class="tip-box" style="margin-top: 10px;">
                     <span class="tip-icon">💡</span>
                     <span>Сбалансированное питание влияет на твою продуктивность не меньше, чем сон. Старайся соблюдать баланс белков, жиров и углеводов, чтобы избегать резких скачков энергии в течение дня.</span>
                 </div>
             </div>
         </div>
 
+        <!-- ЭКРАН 3: ФИНАНСЫ (ВЕРНУЛ КЛАССИЧЕСКИЙ БАЛАНС) -->
         <div id="screen-finance" class="app-screen">
             <h2 class="screen-title">Капитал</h2>
             <div class="card balance-card">
-                <div style="color: var(--text-sub); font-size: 14px; font-weight: 600;">ТЕКУЩИЙ БАЛАНС (₽)</div>
+                <div style="color: var(--text-sub); font-size: 14px; font-weight: 600;">БАЛАНС (₽)</div>
                 <input type="number" id="input-balance" class="balance-input" oninput="updateAppValue('balance', this.value)" placeholder="0">
             </div>
             <div class="card">
@@ -216,6 +239,7 @@
             </div>
         </div>
 
+        <!-- ЭКРАН 4: АНАЛИТИКА -->
         <div id="screen-stats" class="app-screen">
             <h2 class="screen-title">Аналитика</h2>
             <div class="card">
@@ -224,7 +248,8 @@
                     <div style="font-size: 14px; font-weight: 600; margin-top: 5px;">Дней зафиксировано</div>
                 </div>
                 <div id="trend-indicator" style="text-align: center; font-size: 14px; color: var(--success-green); font-weight: 600; margin-bottom: 15px;">
-                    </div>
+                    <!-- Динамический текст -->
+                </div>
                 <div class="tip-box" style="margin-top: 0;">
                     <span class="tip-icon">💡</span>
                     <span>Чем больше дней ты закрываешь, тем точнее выстраивается твоя статистика. Система анализирует твои спады и пики продуктивности.</span>
@@ -232,6 +257,7 @@
             </div>
         </div>
 
+        <!-- ЭКРАН 5: ПРОФИЛЬ -->
         <div id="screen-profile" class="app-screen">
             <h2 class="screen-title">Профиль</h2>
             <div class="card">
@@ -254,6 +280,7 @@
 
     </div>
 
+    <!-- ТАБ БАР -->
     <div class="tab-bar">
         <div id="tab-main" class="tab-item active" onclick="switchTab('main')">
             <span class="tab-icon">📝</span><span>Дневник</span>
@@ -284,6 +311,8 @@
             water: 0,
             energy: 7, mood: 8, stress: 3,
             diary: '',
+            kcal: '', protein: '', fat: '', carbs: '',
+            foodList: '',
             balance: 0,
             savesCount: 0,
             age: '',
@@ -298,9 +327,9 @@
 
         let appData = JSON.parse(localStorage.getItem('flow13_data')) || defaultData;
         
-        // Страховка от undefined для старых сохранений
+        // Страховка для старых сохранений
         appData.water = appData.water || 0;
-        appData.balance = appData.balance || 0;
+        appData.balance = appData.balance !== undefined ? appData.balance : 0;
         appData.sleepTime = appData.sleepTime || '23:00';
         appData.wakeTime = appData.wakeTime || '07:00';
 
@@ -318,16 +347,26 @@
             if(appData.theme === 'dark') { document.body.classList.add('dark-theme'); document.getElementById('theme-toggle-btn').innerText = '🌙'; }
             else { document.body.classList.remove('dark-theme'); document.getElementById('theme-toggle-btn').innerText = '☀️'; }
 
-            document.getElementById('input-age').value = appData.age;
-            document.getElementById('input-gender').value = appData.gender;
-            document.getElementById('input-height').value = appData.height;
-            document.getElementById('input-weight').value = appData.weight;
+            // Заполнение профиля
+            document.getElementById('input-age').value = appData.age || '';
+            document.getElementById('input-gender').value = appData.gender || 'male';
+            document.getElementById('input-height').value = appData.height || '';
+            document.getElementById('input-weight').value = appData.weight || '';
             
+            // Заполнение сна
             document.getElementById('sleep-time').value = appData.sleepTime;
             document.getElementById('wake-time').value = appData.wakeTime;
             
-            document.getElementById('input-balance').value = appData.balance === 0 ? '' : appData.balance;
-            document.getElementById('input-diary').value = appData.diary;
+            // Финансы и дневник
+            document.getElementById('input-balance').value = appData.balance;
+            document.getElementById('input-diary').value = appData.diary || '';
+
+            // КБЖУ
+            document.getElementById('input-kcal').value = appData.kcal || '';
+            document.getElementById('input-protein').value = appData.protein || '';
+            document.getElementById('input-fat').value = appData.fat || '';
+            document.getElementById('input-carbs').value = appData.carbs || '';
+            document.getElementById('input-food-list').value = appData.foodList || '';
 
             updateUI();
             renderHabits();
