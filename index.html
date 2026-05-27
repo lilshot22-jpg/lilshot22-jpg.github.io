@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLOW-13 // LIFE DIARY V9</title>
+    <title>FLOW-13 // LIFE DIARY V10</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -80,16 +80,22 @@
         .main-btn:active { transform: scale(0.98); }
         .secondary-btn { background: var(--accent-purple-light); color: var(--accent-purple); border: none; border-radius: 12px; padding: 10px; width: 100%; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         
+        /* Загрузка фото */
+        .file-upload-btn { background: var(--accent-purple-light); color: var(--accent-purple); border: none; border-radius: 12px; padding: 12px; width: 100%; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; display: inline-block; box-sizing: border-box; margin-bottom: 10px;}
+        .file-upload-btn input[type="file"] { display: none; }
+        .photo-container { position: relative; width: 100%; }
+        .remove-photo-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; font-weight: bold; cursor: pointer; display: none; align-items: center; justify-content: center; padding-bottom: 3px;}
+
         /* Привычки */
         .habit-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
         .habit-text { font-size: 15px; font-weight: 500; flex: 1; margin-right: 10px; }
         .habit-controls { display: flex; align-items: center; gap: 12px; }
-        .delete-habit-btn { background: rgba(255, 59, 48, 0.1); color: var(--alert-red); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding-bottom: 2px;}
+        .delete-btn { background: rgba(255, 59, 48, 0.1); color: var(--alert-red); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding-bottom: 2px;}
 
-        /* Баланс */
+        /* Финансы */
         .balance-card { text-align: center; padding: 24px 16px; }
-        .balance-input { width: 100%; text-align: center; font-size: 36px; font-weight: 800; border: none; background: transparent; color: var(--text-main); outline: none; margin: 10px 0; font-family: var(--font-sans); }
-
+        .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        
         /* Аналитика */
         .stat-box { background: var(--accent-purple-light); padding: 20px; border-radius: 16px; text-align: center; margin-bottom: 16px; }
         .stat-num { font-size: 40px; font-weight: 800; color: var(--accent-purple); }
@@ -106,7 +112,7 @@
         /* Сетка для времени */
         .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
         .time-col { display: flex; flex-direction: column; align-items: center; }
-        .time-col input[type="time"] { text-align: center; margin-bottom: 0; padding: 12px 5px; } /* Центрирование времени */
+        .time-col input[type="time"] { text-align: center; margin-bottom: 0; padding: 12px 5px; }
     </style>
 </head>
 <body>
@@ -122,7 +128,6 @@
 
     <div class="container">
 
-        <!-- ЭКРАН 1: ГЛАВНЫЙ -->
         <div id="screen-main" class="app-screen active">
             
             <div class="card">
@@ -140,7 +145,7 @@
                 <button class="secondary-btn" onclick="scheduleNotification()">Включить автооповещение</button>
                 <div class="tip-box">
                     <span class="tip-icon">💡</span>
-                    <span>Стабильный режим сна — основа продуктивности. Засыпая и просыпаясь в одно и то же время, ты помогаешь организму регулировать циркадные ритмы и восстанавливать нервную систему. Установи время отбоя, и бот пришлет напоминание.</span>
+                    <span>Стабильный режим сна — основа продуктивности. Засыпая и просыпаясь в одно и то же время, ты помогаешь организму регулировать циркадные ритмы.</span>
                 </div>
             </div>
 
@@ -149,10 +154,6 @@
                 <div class="water-interface">
                     <button class="water-btn" onclick="addWater(-250)">- 250 мл</button>
                     <button class="water-btn" onclick="addWater(250)">+ 250 мл</button>
-                </div>
-                <div class="tip-box">
-                    <span class="tip-icon">💡</span>
-                    <span>Достаточное потребление воды поддерживает уровень энергии и концентрацию в течение дня. Держи стакан воды под рукой, чтобы не забывать пить.</span>
                 </div>
             </div>
 
@@ -166,11 +167,6 @@
                 
                 <div class="card-label" style="margin-top: 15px;"><span>🌪 Стресс</span> <span id="val-stress" style="font-weight: 800; color: var(--alert-red);">3/10</span></div>
                 <input type="range" id="input-stress" min="1" max="10" oninput="updateAppValue('stress', this.value)">
-                
-                <div class="tip-box">
-                    <span class="tip-icon">💡</span>
-                    <span>Если уровень стресса растет, сделай паузу. Короткая прогулка, медитация или цифровая детоксикация на 15 минут помогут разгрузить мозг и вернуть фокус.</span>
-                </div>
             </div>
 
             <div class="card">
@@ -190,9 +186,21 @@
             <button class="main-btn" onclick="saveDay()">Зафиксировать день</button>
         </div>
 
-        <!-- ЭКРАН 2: ПИТАНИЕ (ТРЕКИНГ КБЖУ ВОССТАНОВЛЕН) -->
         <div id="screen-food" class="app-screen">
             <h2 class="screen-title">Питание</h2>
+            
+            <div class="card">
+                <div class="card-label">Фото рациона</div>
+                <label class="file-upload-btn">
+                    📷 Загрузить фото еды
+                    <input type="file" accept="image/*" onchange="handleFoodPhoto(this)">
+                </label>
+                <div class="photo-container">
+                    <img id="food-photo-preview" style="width: 100%; border-radius: 12px; margin-top: 10px; display: none; object-fit: cover;" />
+                    <button id="remove-photo-btn" class="remove-photo-btn" onclick="removeFoodPhoto()">×</button>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-label">КБЖУ Трекер</div>
                 <div style="display: flex; gap: 8px; margin-bottom: 15px;">
@@ -216,30 +224,35 @@
 
                 <div class="card-label">Рацион</div>
                 <textarea id="input-food-list" class="ios-input" placeholder="Что было съедено за день? Запиши приемы пищи." oninput="updateAppValue('foodList', this.value)"></textarea>
-
-                <div class="tip-box" style="margin-top: 10px;">
-                    <span class="tip-icon">💡</span>
-                    <span>Сбалансированное питание влияет на твою продуктивность не меньше, чем сон. Старайся соблюдать баланс белков, жиров и углеводов, чтобы избегать резких скачков энергии в течение дня.</span>
-                </div>
             </div>
         </div>
 
-        <!-- ЭКРАН 3: ФИНАНСЫ (ВЕРНУЛ КЛАССИЧЕСКИЙ БАЛАНС) -->
         <div id="screen-finance" class="app-screen">
             <h2 class="screen-title">Капитал</h2>
+            
             <div class="card balance-card">
-                <div style="color: var(--text-sub); font-size: 14px; font-weight: 600;">БАЛАНС (₽)</div>
-                <input type="number" id="input-balance" class="balance-input" oninput="updateAppValue('balance', this.value)" placeholder="0">
+                <div style="color: var(--text-sub); font-size: 14px; font-weight: 600;">ТЕКУЩИЙ БАЛАНС (₽)</div>
+                <div id="display-balance" style="font-size: 38px; font-weight: 800; margin: 10px 0; color: var(--text-main);">0</div>
             </div>
+
             <div class="card">
-                <div class="tip-box" style="margin-top: 0;">
-                    <span class="tip-icon">💡</span>
-                    <span>Регулярный трекинг финансов снижает фоновую тревожность. Учитывай все доходы и расходы, чтобы видеть реальную картину своего капитала и планировать будущие цели.</span>
+                <div class="card-label">Добавить операцию</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="number" id="tx-amount" class="ios-input" placeholder="Сумма (₽)" style="margin-bottom: 0;">
+                    <input type="text" id="tx-desc" class="ios-input" placeholder="Категория" style="margin-bottom: 0;">
                 </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="main-btn" style="background: var(--success-green); margin-top: 0; padding: 10px;" onclick="addTransaction('income')">+ Доход</button>
+                    <button class="main-btn" style="background: var(--alert-red); margin-top: 0; padding: 10px;" onclick="addTransaction('expense')">- Расход</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">История операций</div>
+                <div id="tx-list"></div>
             </div>
         </div>
 
-        <!-- ЭКРАН 4: АНАЛИТИКА -->
         <div id="screen-stats" class="app-screen">
             <h2 class="screen-title">Аналитика</h2>
             <div class="card">
@@ -247,17 +260,10 @@
                     <div class="stat-num" id="stat-saves">0</div>
                     <div style="font-size: 14px; font-weight: 600; margin-top: 5px;">Дней зафиксировано</div>
                 </div>
-                <div id="trend-indicator" style="text-align: center; font-size: 14px; color: var(--success-green); font-weight: 600; margin-bottom: 15px;">
-                    <!-- Динамический текст -->
-                </div>
-                <div class="tip-box" style="margin-top: 0;">
-                    <span class="tip-icon">💡</span>
-                    <span>Чем больше дней ты закрываешь, тем точнее выстраивается твоя статистика. Система анализирует твои спады и пики продуктивности.</span>
-                </div>
+                <div id="trend-indicator" style="text-align: center; font-size: 14px; color: var(--success-green); font-weight: 600; margin-bottom: 15px;"></div>
             </div>
         </div>
 
-        <!-- ЭКРАН 5: ПРОФИЛЬ -->
         <div id="screen-profile" class="app-screen">
             <h2 class="screen-title">Профиль</h2>
             <div class="card">
@@ -280,7 +286,6 @@
 
     </div>
 
-    <!-- ТАБ БАР -->
     <div class="tab-bar">
         <div id="tab-main" class="tab-item active" onclick="switchTab('main')">
             <span class="tab-icon">📝</span><span>Дневник</span>
@@ -303,21 +308,16 @@
         const tg = window.Telegram?.WebApp;
         if(tg) { tg.expand(); }
 
-        // Универсальные дефолтные данные
         const defaultData = {
             theme: 'light',
-            sleepTime: '23:00',
-            wakeTime: '07:00',
-            water: 0,
-            energy: 7, mood: 8, stress: 3,
-            diary: '',
-            kcal: '', protein: '', fat: '', carbs: '',
-            foodList: '',
+            sleepTime: '23:00', wakeTime: '07:00',
+            water: 0, energy: 7, mood: 8, stress: 3,
+            diary: '', kcal: '', protein: '', fat: '', carbs: '', foodList: '',
+            foodPhoto: null,
             balance: 0,
+            transactions: [],
             savesCount: 0,
-            age: '',
-            gender: 'male',
-            height: '', weight: '',
+            age: '', gender: 'male', height: '', weight: '',
             habits: [
                 { id: Date.now(), text: "Чтение 15 минут", done: false },
                 { id: Date.now()+1, text: "Физическая активность", done: false },
@@ -327,9 +327,10 @@
 
         let appData = JSON.parse(localStorage.getItem('flow13_data')) || defaultData;
         
-        // Страховка для старых сохранений
+        // Страховка данных
         appData.water = appData.water || 0;
-        appData.balance = appData.balance !== undefined ? appData.balance : 0;
+        appData.balance = Number(appData.balance) || 0;
+        appData.transactions = appData.transactions || [];
         appData.sleepTime = appData.sleepTime || '23:00';
         appData.wakeTime = appData.wakeTime || '07:00';
 
@@ -347,21 +348,15 @@
             if(appData.theme === 'dark') { document.body.classList.add('dark-theme'); document.getElementById('theme-toggle-btn').innerText = '🌙'; }
             else { document.body.classList.remove('dark-theme'); document.getElementById('theme-toggle-btn').innerText = '☀️'; }
 
-            // Заполнение профиля
             document.getElementById('input-age').value = appData.age || '';
             document.getElementById('input-gender').value = appData.gender || 'male';
             document.getElementById('input-height').value = appData.height || '';
             document.getElementById('input-weight').value = appData.weight || '';
             
-            // Заполнение сна
             document.getElementById('sleep-time').value = appData.sleepTime;
             document.getElementById('wake-time').value = appData.wakeTime;
             
-            // Финансы и дневник
-            document.getElementById('input-balance').value = appData.balance;
             document.getElementById('input-diary').value = appData.diary || '';
-
-            // КБЖУ
             document.getElementById('input-kcal').value = appData.kcal || '';
             document.getElementById('input-protein').value = appData.protein || '';
             document.getElementById('input-fat').value = appData.fat || '';
@@ -370,21 +365,144 @@
 
             updateUI();
             renderHabits();
+            renderTransactions();
+            updateFoodPhotoPreview();
         }
 
         function updateUI() {
             document.getElementById('val-water').innerText = appData.water + ' мл';
-
             document.getElementById('input-energy').value = appData.energy;
             document.getElementById('val-energy').innerText = appData.energy + '/10';
             document.getElementById('input-mood').value = appData.mood;
             document.getElementById('val-mood').innerText = appData.mood + '/10';
             document.getElementById('input-stress').value = appData.stress;
             document.getElementById('val-stress').innerText = appData.stress + '/10';
-
             document.getElementById('stat-saves').innerText = appData.savesCount;
+            document.getElementById('display-balance').innerText = appData.balance;
         }
 
+        // ====== ФИНАНСЫ ======
+        function addTransaction(type) {
+            const amountInput = document.getElementById('tx-amount');
+            const descInput = document.getElementById('tx-desc');
+            const amount = parseFloat(amountInput.value);
+            const desc = descInput.value.trim() || (type === 'income' ? 'Доход' : 'Расход');
+
+            if (isNaN(amount) || amount <= 0) return;
+
+            const tx = {
+                id: Date.now(),
+                type: type,
+                amount: amount,
+                desc: desc,
+                date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' })
+            };
+
+            appData.transactions.unshift(tx);
+            if (type === 'income') appData.balance += amount;
+            else appData.balance -= amount;
+
+            saveToStore();
+            renderTransactions();
+            
+            amountInput.value = '';
+            descInput.value = '';
+            vibeLight();
+        }
+
+        function renderTransactions() {
+            document.getElementById('display-balance').innerText = appData.balance;
+            const listEl = document.getElementById('tx-list');
+            listEl.innerHTML = '';
+            
+            if (appData.transactions.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center; color:var(--text-sub); font-size: 14px; padding: 10px;">Пока нет операций</div>';
+                return;
+            }
+
+            appData.transactions.forEach(tx => {
+                const isIncome = tx.type === 'income';
+                const color = isIncome ? 'var(--success-green)' : 'var(--text-main)';
+                const sign = isIncome ? '+' : '-';
+                
+                const el = document.createElement('div');
+                el.className = 'tx-row';
+                el.innerHTML = `
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-weight:600; font-size:15px;">${tx.desc}</span>
+                        <span style="font-size:12px; color:var(--text-sub);">${tx.date}</span>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <span style="font-weight:700; color:${color}; font-size:16px;">${sign}${tx.amount} ₽</span>
+                        <button class="delete-btn" style="width:24px; height:24px; margin-left:12px; font-size:16px;" onclick="deleteTx(${tx.id})">×</button>
+                    </div>
+                `;
+                listEl.appendChild(el);
+            });
+        }
+
+        function deleteTx(id) {
+            const txIndex = appData.transactions.findIndex(t => t.id === id);
+            if (txIndex > -1) {
+                const tx = appData.transactions[txIndex];
+                if (tx.type === 'income') appData.balance -= tx.amount;
+                else appData.balance += tx.amount;
+                appData.transactions.splice(txIndex, 1);
+                saveToStore();
+                renderTransactions();
+                vibeLight();
+            }
+        }
+
+        // ====== ФОТО ПИТАНИЯ ======
+        function handleFoodPhoto(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Сжатие изображения через Canvas, чтобы не забить localStorage
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 600; // Оптимально для телефона
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        appData.foodPhoto = canvas.toDataURL('image/jpeg', 0.7);
+                        saveToStore();
+                        updateFoodPhotoPreview();
+                    }
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updateFoodPhotoPreview() {
+            const img = document.getElementById('food-photo-preview');
+            const btn = document.getElementById('remove-photo-btn');
+            if (appData.foodPhoto) {
+                img.src = appData.foodPhoto;
+                img.style.display = 'block';
+                btn.style.display = 'flex';
+            } else {
+                img.style.display = 'none';
+                btn.style.display = 'none';
+            }
+        }
+
+        function removeFoodPhoto() {
+            appData.foodPhoto = null;
+            saveToStore();
+            updateFoodPhotoPreview();
+            vibeLight();
+        }
+
+        // ====== ОСТАЛЬНАЯ ЛОГИКА ======
         function addWater(amount) {
             appData.water = Math.max(0, parseInt(appData.water) + amount);
             saveToStore();
@@ -395,9 +513,7 @@
         function renderHabits() {
             const listEl = document.getElementById('habits-list');
             listEl.innerHTML = '';
-            
             if (!appData.habits) appData.habits = [];
-            
             appData.habits.forEach((habit) => {
                 const checked = habit.done ? 'checked' : '';
                 const newRow = document.createElement('div');
@@ -409,7 +525,7 @@
                             <input type="checkbox" ${checked} onchange="toggleHabit(${habit.id}, this.checked)">
                             <span class="slider-switch"></span>
                         </label>
-                        <button class="delete-habit-btn" onclick="deleteHabit(${habit.id})">×</button>
+                        <button class="delete-btn" onclick="deleteHabit(${habit.id})">×</button>
                     </div>
                 `;
                 listEl.appendChild(newRow);
@@ -426,7 +542,6 @@
             const inputEl = document.getElementById('new-habit-input');
             const text = inputEl.value.trim();
             if (!text) return;
-            
             appData.habits.push({ id: Date.now(), text: text, done: false });
             saveToStore();
             renderHabits();
@@ -461,10 +576,7 @@
             document.getElementById('screen-' + tabId).classList.add('active');
             document.getElementById('tab-' + tabId).classList.add('active');
             vibeLight();
-            
-            if(tabId === 'stats') {
-                calculateWeeklyTrends();
-            }
+            if(tabId === 'stats') { calculateWeeklyTrends(); }
         }
 
         function calculateWeeklyTrends() {
@@ -483,17 +595,13 @@
 
         function scheduleNotification() {
             const time = appData.sleepTime;
-            if(tg && tg.sendData) {
-                tg.sendData(JSON.stringify({ action: 'set_reminder', time: time }));
-                alert('Команда отправлена боту: Напоминание на ' + time);
-            } else {
-                alert('Напоминание на ' + time + ' установлено (бот получит этот сигнал в Telegram)');
-            }
+            if(tg && tg.sendData) { tg.sendData(JSON.stringify({ action: 'set_reminder', time: time })); } 
+            else { alert('Напоминание на ' + time + ' установлено'); }
             vibeLight();
         }
 
         function resetData() {
-            if(confirm('Точно удалить все данные?')) {
+            if(confirm('Точно удалить все данные? Баланс и история операций тоже исчезнут.')) {
                 localStorage.removeItem('flow13_data');
                 appData = defaultData;
                 location.reload();
