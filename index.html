@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLOW-13 // PRO</title>
+    <title>FLOW-13 // ULTIMATE</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg-color: #f2f2f7;
             --card-bg: #ffffff;
-            --text-main: #000000;
+            --text-main: #1c1c1e;
             --text-sub: #8e8e93;
             --accent-purple: #8e44ad;
             --accent-purple-light: rgba(142, 68, 173, 0.1);
             --alert-red: #ff3b30;
             --border-color: #e5e5ea;
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         body.dark-theme {
@@ -25,7 +25,7 @@
             --text-main: #ffffff;
             --text-sub: #98989d;
             --accent-purple: #bf5af2;
-            --accent-purple-light: rgba(191, 90, 242, 0.2);
+            --accent-purple-light: rgba(191, 90, 242, 0.15);
             --border-color: #38383a;
         }
 
@@ -38,6 +38,7 @@
             margin: 0; padding: 0; padding-bottom: 90px;
         }
 
+        /* Шапка как в ТГ */
         .tg-header {
             background: var(--card-bg);
             padding: 16px 20px 8px 20px;
@@ -47,29 +48,64 @@
             border-bottom: 1px solid var(--border-color);
             position: sticky; top: 0; z-index: 50;
         }
-
-        .theme-toggle { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
+        .tg-header .close-btn { color: var(--text-main); font-size: 16px; cursor: pointer; }
         .tg-header .app-title { text-align: center; }
         .tg-header .app-title h1 { margin: 0; font-size: 17px; font-weight: 600; }
         .tg-header .app-title span { font-size: 12px; color: var(--text-sub); }
+        .tg-header .more-btn { font-size: 20px; font-weight: bold; cursor: pointer; color: var(--text-main); }
 
         .container { padding: 16px; max-width: 500px; margin: 0 auto; }
+
+        /* Верхняя панель: стрик и переключатель темы как на скрине */
+        .top-status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .streak-badge {
+            background: var(--card-bg);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            color: #ff9500;
+            border: 1px solid var(--border-color);
+        }
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: transform 0.1s;
+        }
+        .theme-btn:active { transform: scale(0.9); }
 
         .screen-title { font-size: 26px; font-weight: 800; margin: 0 0 6px 0; }
         .screen-subtitle { font-size: 14px; color: var(--text-sub); margin: 0 0 20px 0; }
 
+        /* Карточки */
         .card {
             background: var(--card-bg);
             border-radius: 24px;
             padding: 20px;
             margin-bottom: 16px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.01);
+            border: 1px solid var(--border-color);
         }
 
         .card-label { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .unit-display { color: var(--accent-purple); font-weight: 800; background: var(--accent-purple-light); padding: 2px 10px; border-radius: 12px; font-size: 14px; }
 
+        /* Ползунки */
         input[type="range"] {
             -webkit-appearance: none; width: 100%; height: 10px; background: var(--border-color); border-radius: 5px; outline: none; margin: 15px 0;
         }
@@ -77,40 +113,42 @@
             -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-purple); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
 
+        /* Вода */
         .water-interface { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
         .water-btn {
-            background: var(--accent-purple-light); color: var(--accent-purple); border: none; padding: 12px; border-radius: 16px; font-weight: 700; cursor: pointer; flex: 1; margin: 0 5px;
+            background: var(--accent-purple-light); color: var(--accent-purple); border: none; padding: 12px; border-radius: 16px; font-weight: 700; font-size: 15px; cursor: pointer; flex: 1; margin: 0 5px; text-align: center;
         }
+        .water-btn:active { opacity: 0.7; }
 
-        .input-group { margin-bottom: 16px; }
-        .input-group label { display: block; font-size: 14px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
-        .ios-input {
-            width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color);
-            background: var(--bg-color); color: var(--text-main); font-size: 16px; outline: none;
-        }
-
-        /* Сегментированный контроль (Неделя/Месяц/Год) */
-        .segmented-control {
-            display: flex; background: var(--bg-color); border-radius: 8px; padding: 2px; margin-bottom: 20px;
-        }
-        .segment {
-            flex: 1; text-align: center; padding: 6px 0; font-size: 13px; font-weight: 600; cursor: pointer;
-            border-radius: 6px; color: var(--text-sub); transition: 0.2s;
-        }
-        .segment.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        /* Привычки */
+        .habit-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .habit-row:last-child { border-bottom: none; }
+        .habit-text { font-size: 15px; font-weight: 500; }
 
         /* iOS Switch */
         .ios-switch { position: relative; display: inline-block; width: 51px; height: 31px; }
         .ios-switch input { opacity: 0; width: 0; height: 0; }
         .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px; }
-        .slider-switch:before { position: absolute; content: ""; height: 27px; width: 27px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .slider-switch:before { position: absolute; content: ""; height: 27px; width: 27px; left: 2px; bottom: 2px; background-color: #ffffff; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         input:checked + .slider-switch { background-color: var(--accent-purple); }
         input:checked + .slider-switch:before { transform: translateX(20px); }
 
-        .main-btn {
-            background: var(--accent-purple); color: #ffffff; border: none; border-radius: 20px; padding: 16px; width: 100%; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px;
-        }
+        /* Профиль инпуты */
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 14px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+        .ios-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 16px; outline: none; }
 
+        /* Сегменты */
+        .segmented-control { display: flex; background: var(--bg-color); border-radius: 8px; padding: 2px; margin-bottom: 20px; }
+        .segment { flex: 1; text-align: center; padding: 6px 0; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; color: var(--text-sub); transition: 0.2s; }
+        .segment.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        .main-btn {
+            background: var(--accent-purple); color: #ffffff; border: none; border-radius: 20px; padding: 16px; width: 100%; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px var(--accent-purple-light);
+        }
+        .main-btn:active { transform: scale(0.98); }
+
+        /* Таббар */
         .tab-bar {
             position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); height: 75px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border-color); padding-bottom: 12px; z-index: 100;
         }
@@ -125,40 +163,88 @@
 <body>
 
     <div class="tg-header">
-        <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+        <div class="close-btn">Закрыть</div>
         <div class="app-title">
             <h1>FLOW-13</h1>
-            <span>v2.0 pro</span>
+            <span>мини-приложение</span>
         </div>
-        <div style="width: 24px;"></div>
+        <div class="more-btn">•••</div>
     </div>
 
     <div class="container">
         
+        <!-- Стрик и переключатель темы (в точности как на скрине) -->
+        <div class="top-status-row">
+            <div class="streak-badge">🔥 3 дней</div>
+            <div class="theme-btn" id="theme-toggle-btn" onclick="toggleTheme()">☀️</div>
+        </div>
+
         <!-- ЭКРАН 1: ЧЕК-ИН -->
         <div id="screen-checkin" class="app-screen active">
-            <h2 class="screen-title">Чек-ин</h2>
-            <p class="screen-subtitle">Логгируй текущее состояние системы</p>
+            <h2 class="screen-title">Твой энерго-баланс</h2>
+            <p class="screen-subtitle">Настрой параметры под свое текущее состояние</p>
 
+            <!-- ВСЕ МЕТРИКИ ВЕРНУЛИСЬ -->
             <div class="card">
-                <div class="card-label"><span>⏱ Сон</span> <span class="unit-display" id="val-sleep">7.5 ч</span></div>
+                <div class="card-label"><span>⏱ Сколько часов ты поспал?</span> <span class="unit-display" id="val-sleep">7.5 ч</span></div>
                 <input type="range" id="input-sleep" min="0" max="12" step="0.5" value="7.5" oninput="syncValues(); vibeLight()">
             </div>
 
             <div class="card">
-                <div class="card-label"><span>💧 Вода</span> <span class="unit-display" id="val-water">1250 мл</span></div>
+                <div class="card-label"><span>🧠 Доля глубокой фазы сна</span> <span class="unit-display" id="val-deep">45%</span></div>
+                <input type="range" id="input-deep" min="0" max="100" step="5" value="45" oninput="syncValues(); vibeLight()">
+            </div>
+
+            <div class="card">
+                <div class="card-label"><span>💻 Чистая работа в фокусе</span> <span class="unit-display" id="val-work">4.0 ч</span></div>
+                <input type="range" id="input-work" min="0" max="12" step="0.5" value="4.0" oninput="syncValues(); vibeLight()">
+            </div>
+
+            <div class="card">
+                <div class="card-label"><span>📱 Экранное время</span> <span class="unit-display" id="val-screen">5.5 ч</span></div>
+                <input type="range" id="input-screen" min="0" max="24" step="0.5" value="5.5" oninput="syncValues(); vibeLight()">
+            </div>
+
+            <div class="card">
+                <div class="card-label"><span>💧 Счетчик чистой воды</span> <span class="unit-display" id="val-water">1250 мл</span></div>
                 <div class="water-interface">
                     <button class="water-btn" onclick="addWater(-250)">- 250 мл</button>
                     <button class="water-btn" onclick="addWater(250)">+ 250 мл</button>
                 </div>
             </div>
 
-            <button class="main-btn" onclick="processMetrics(); vibeHeavy()">Сгенерировать инсайты</button>
+            <div class="card">
+                <div class="card-label">⚙️ Выполнение протоколов</div>
+                <div class="habit-row">
+                    <span class="habit-text">⌨️ Написание кода / Свой продукт</span>
+                    <label class="ios-switch">
+                        <input type="checkbox" id="habit-code" checked onchange="vibeLight()">
+                        <span class="slider-switch"></span>
+                    </label>
+                </div>
+                <div class="habit-row">
+                    <span class="habit-text">🫁 Дыхательные практики / ЦНС</span>
+                    <label class="ios-switch">
+                        <input type="checkbox" id="habit-breath" onchange="vibeLight()">
+                        <span class="slider-switch"></span>
+                    </label>
+                </div>
+                <div class="habit-row">
+                    <span class="habit-text">#️⃣ Без экрана первый час утра</span>
+                    <label class="ios-switch">
+                        <input type="checkbox" id="habit-noscreen" onchange="vibeLight()">
+                        <span class="slider-switch"></span>
+                    </label>
+                </div>
+            </div>
+
+            <button class="main-btn" onclick="processMetrics(); vibeHeavy()">Сохранить лог системы</button>
         </div>
 
         <!-- ЭКРАН 2: СТАТИСТИКА -->
         <div id="screen-stats" class="app-screen">
-            <h2 class="screen-title">Аналитика</h2>
+            <h2 class="screen-title">Твоя статистика</h2>
+            <p class="screen-subtitle">Динамика твоих состояний</p>
             
             <div class="segmented-control">
                 <div class="segment active" onclick="switchTimeframe(this); vibeLight()">7 дней</div>
@@ -166,17 +252,23 @@
                 <div class="segment" onclick="switchTimeframe(this); vibeLight()">Год</div>
             </div>
 
-            <div class="card" style="height: 180px; display: flex; align-items: center; justify-content: center; color: var(--text-sub);">
-                [График адаптируется под таймфрейм]
+            <!-- График-заглушка в стиле скрина -->
+            <div class="card" style="height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; font-size: 12px; font-weight: bold;">
+                    <span style="color: #3498db;">■ Сон</span>
+                    <span style="color: #f1c40f;">■ Утро</span>
+                    <span style="color: #e74c3c;">■ Настроение</span>
+                </div>
+                <p style="color: var(--text-sub); text-align: center; font-size: 14px;">[График динамики отрисовывается...]</p>
             </div>
 
             <div id="advices-target"></div>
         </div>
 
-        <!-- ЭКРАН 3: ПРОФИЛЬ И НАСТРОЙКИ -->
+        <!-- ЭКРАН 3: ПРОФИЛЬ -->
         <div id="screen-profile" class="app-screen">
             <h2 class="screen-title">Биометрия</h2>
-            <p class="screen-subtitle">Данные для калибровки алгоритмов</p>
+            <p class="screen-subtitle">Базовые параметры для ИИ-алгоритмов</p>
 
             <div class="card">
                 <div class="input-group">
@@ -201,21 +293,21 @@
             </div>
 
             <div class="card">
-                <div class="card-label">🔔 Умные пуши</div>
+                <div class="card-label">🔔 Авто-уведомления</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 15px;">Напоминание о чек-ине</span>
+                    <span style="font-size: 15px;">Напоминать о чек-ине</span>
                     <label class="ios-switch">
                         <input type="checkbox" id="notif-toggle" onchange="toggleNotifications(); vibeLight()">
                         <span class="slider-switch"></span>
                     </label>
                 </div>
                 <div class="input-group" id="time-input-group" style="display: none; margin-top: 15px;">
-                    <label>Время уведомления</label>
+                    <label>Время пуша</label>
                     <input type="time" id="notif-time" class="ios-input" value="20:00" onchange="vibeLight()">
                 </div>
             </div>
             
-            <button class="main-btn" onclick="saveProfile(); vibeHeavy()">Сохранить профиль</button>
+            <button class="main-btn" onclick="saveProfile(); vibeHeavy()">Обновить базу</button>
         </div>
 
     </div>
@@ -235,44 +327,48 @@
 
     <script>
         let currentWater = 1250;
+        let isDarkMode = false;
         const tg = window.Telegram?.WebApp;
-        
-        // Инициализация Telegram WebApp
         if(tg) { tg.expand(); }
 
-        // ВИБРООТКЛИК (Haptic Feedback)
+        // ВИБРАЦИЯ
         function vibeLight() {
             if (tg && tg.HapticFeedback) { tg.HapticFeedback.impactOccurred('light'); }
-            else if (navigator.vibrate) { navigator.vibrate(20); }
+            else if (navigator.vibrate) { navigator.vibrate(15); }
         }
-
         function vibeHeavy() {
             if (tg && tg.HapticFeedback) { tg.HapticFeedback.impactOccurred('heavy'); }
-            else if (navigator.vibrate) { navigator.vibrate([30, 50, 30]); }
+            else if (navigator.vibrate) { navigator.vibrate([30, 40, 30]); }
         }
 
-        // ТЕМНАЯ ТЕМА
+        // ТЕМА: Переключатель в виде Солнца/Луны
         function toggleTheme() {
+            isDarkMode = !isDarkMode;
             document.body.classList.toggle('dark-theme');
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            themeBtn.innerText = isDarkMode ? '🌙' : '☀️';
             vibeLight();
         }
 
-        // Вкладки
+        // ВКЛАДКИ
         function switchTab(tabId) {
             document.querySelectorAll('.app-screen, .tab-item').forEach(el => el.classList.remove('active'));
             document.getElementById('screen-' + tabId).classList.add('active');
             document.getElementById('tab-' + tabId).classList.add('active');
         }
 
-        // Таймфреймы статистики
+        // ТАЙМФРЕЙМЫ
         function switchTimeframe(element) {
             document.querySelectorAll('.segment').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
         }
 
-        // Синхронизация ползунков
+        // СИНХРОНИЗАЦИЯ ПОЛЗУНКОВ
         function syncValues() {
             document.getElementById('val-sleep').innerText = parseFloat(document.getElementById('input-sleep').value).toFixed(1) + ' ч';
+            document.getElementById('val-deep').innerText = document.getElementById('input-deep').value + '%';
+            document.getElementById('val-work').innerText = parseFloat(document.getElementById('input-work').value).toFixed(1) + ' ч';
+            document.getElementById('val-screen').innerText = parseFloat(document.getElementById('input-screen').value).toFixed(1) + ' ч';
         }
 
         function addWater(amount) {
@@ -281,54 +377,67 @@
             vibeLight();
         }
 
-        // Уведомления
+        // УВЕДОМЛЕНИЯ
         function toggleNotifications() {
             const isChecked = document.getElementById('notif-toggle').checked;
             document.getElementById('time-input-group').style.display = isChecked ? 'block' : 'none';
-            if(isChecked && Notification.permission !== "granted") {
-                Notification.requestPermission();
-            }
         }
+        function saveProfile() { alert("Биометрия и настройки сохранены!"); }
 
-        function saveProfile() {
-            alert("Биометрия сохранена в локальной базе!");
-        }
-
-        // ГЕНЕРАЦИЯ УМНЫХ СОВЕТОВ С УЧЕТОМ ПРОФИЛЯ
+        // СЛОЖНЫЙ АНАЛИЗ (все метрики + биометрия)
         function processMetrics() {
             const sleep = parseFloat(document.getElementById('input-sleep').value);
-            
-            // Берем данные юзера
+            const deepSleep = parseInt(document.getElementById('input-deep').value);
+            const work = parseFloat(document.getElementById('input-work').value);
+            const screen = parseFloat(document.getElementById('input-screen').value);
             const weight = parseFloat(document.getElementById('prof-weight').value) || 75;
-            const age = parseInt(document.getElementById('prof-age').value) || 28;
-            const gender = document.getElementById('prof-gender').value;
-
-            // Интеллектуальный расчет нормы воды: 35 мл на 1 кг веса
+            
             const waterTarget = Math.round(weight * 35); 
             
-            let adviceHtml = "<h3>🧠 Анализ на основе твоей биометрии</h3>";
+            let adviceHtml = "<h3>🧠 Алгоритмический разбор</h3>";
+            let allGood = true;
 
-            // Совет по гидратации (зависит от веса)
             if (currentWater < waterTarget) {
+                allGood = false;
                 adviceHtml += `
                 <div class="card" style="border-left: 5px solid var(--alert-red); background: rgba(255, 59, 48, 0.03)">
-                    <div style="color: var(--alert-red); font-weight: 700; font-size: 15px; margin-bottom: 6px;">💧 Дефицит гидратации</div>
-                    <p style="font-size: 14px; margin: 0;">Твоя норма при весе ${weight} кг — минимум <b>${waterTarget} мл</b>. Твои клетки недополучают кислород. Выпей стакан прямо сейчас.</p>
-                </div>`;
-            } else {
-                adviceHtml += `
-                <div class="card" style="border-left: 5px solid #34c759; background: rgba(52, 199, 89, 0.03)">
-                    <div style="color: #34c759; font-weight: 700; font-size: 15px; margin-bottom: 6px;">💧 Водный баланс в норме</div>
-                    <p style="font-size: 14px; margin: 0;">Красавчик, норму в ${waterTarget} мл покрыл. ЦНС работает без перебоев.</p>
+                    <div style="color: var(--alert-red); font-weight: 700; margin-bottom: 6px;">💧 Дефицит воды</div>
+                    <p style="font-size: 14px; margin: 0;">Твоя норма при весе ${weight} кг — <b>${waterTarget} мл</b>. Гипоксия снижает продуктивность.</p>
                 </div>`;
             }
 
-            // Совет по сну (зависит от возраста)
-            if (sleep < 7) {
+            if (screen > 6 && deepSleep < 20) {
+                allGood = false;
                 adviceHtml += `
                 <div class="card" style="border-left: 5px solid #ff9500; background: rgba(255, 149, 0, 0.03)">
-                    <div style="color: #ff9500; font-weight: 700; font-size: 15px; margin-bottom: 6px;">🔋 Ресурс на исходе</div>
-                    <p style="font-size: 14px; margin: 0;">В ${age} лет метаболизм требует стабильных 7.5 часов для восстановления кортизола. Завтра отсеки гаджеты за час до сна.</p>
+                    <div style="color: #ff9500; font-weight: 700; margin-bottom: 6px;">📱 Синий спектр убил фазу</div>
+                    <p style="font-size: 14px; margin: 0;">Ты много сидел в экране (${screen} ч), глубокий сон упал до ${deepSleep}%. Отложи телефон за час до кровати.</p>
+                </div>`;
+            }
+
+            if (work > 5 && !document.getElementById('habit-code').checked) {
+                allGood = false;
+                adviceHtml += `
+                <div class="card" style="border-left: 5px solid #8e44ad; background: rgba(142, 68, 173, 0.05)">
+                    <div style="color: #8e44ad; font-weight: 700; margin-bottom: 6px;">⌨️ Расфокус в работе</div>
+                    <p style="font-size: 14px; margin: 0;">Ты отметил фокусную работу, но свой продукт / код простаивает. Направь этот ресурс на главное.</p>
+                </div>`;
+            }
+
+            if (!document.getElementById('habit-noscreen').checked) {
+                allGood = false;
+                adviceHtml += `
+                <div class="card" style="border-left: 5px solid var(--alert-red); background: rgba(255, 59, 48, 0.03)">
+                    <div style="color: var(--alert-red); font-weight: 700; margin-bottom: 6px;">#️⃣ Дофаминовая яма с утра</div>
+                    <p style="font-size: 14px; margin: 0;">Взял телефон в первый час. Завтра строгое табу на скроллинг до завтрака.</p>
+                </div>`;
+            }
+
+            if (allGood) {
+                adviceHtml += `
+                <div class="card" style="border-left: 5px solid #34c759; background: rgba(52, 199, 89, 0.03)">
+                    <div style="color: #34c759; font-weight: 700; margin-bottom: 6px;">🟢 Система в потоке</div>
+                    <p style="font-size: 14px; margin: 0;">Все метрики в идеальной зоне. Ты выжимаешь максимум из своего ресурса сегодня.</p>
                 </div>`;
             }
 
