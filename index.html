@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLOW-13 // ULTIMATE</title>
+    <title>FLOW-13 // LIFE DIARY</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -14,6 +14,7 @@
             --accent-purple: #8e44ad;
             --accent-purple-light: rgba(142, 68, 173, 0.1);
             --alert-red: #ff3b30;
+            --success-green: #34c759;
             --border-color: #e5e5ea;
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             transition: background-color 0.3s ease, color 0.3s ease;
@@ -32,129 +33,83 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: var(--font-sans);
-            margin: 0; padding: 0; padding-bottom: 90px;
+            background-color: var(--bg-color); color: var(--text-main); font-family: var(--font-sans); margin: 0; padding: 0; padding-bottom: 90px;
         }
 
-        /* Шапка как в ТГ */
+        /* Шапка */
         .tg-header {
-            background: var(--card-bg);
-            padding: 16px 20px 8px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky; top: 0; z-index: 50;
+            background: var(--card-bg); padding: 16px 20px 8px 20px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50;
         }
-        .tg-header .close-btn { color: var(--text-main); font-size: 16px; cursor: pointer; }
-        .tg-header .app-title { text-align: center; }
-        .tg-header .app-title h1 { margin: 0; font-size: 17px; font-weight: 600; }
-        .tg-header .app-title span { font-size: 12px; color: var(--text-sub); }
-        .tg-header .more-btn { font-size: 20px; font-weight: bold; cursor: pointer; color: var(--text-main); }
+        .app-title { text-align: center; }
+        .app-title h1 { margin: 0; font-size: 17px; font-weight: 600; }
+        .app-title span { font-size: 12px; color: var(--text-sub); }
+        .theme-btn { font-size: 20px; cursor: pointer; border: none; background: none; color: var(--text-main); }
 
         .container { padding: 16px; max-width: 500px; margin: 0 auto; }
-
-        /* Верхняя панель: стрик и переключатель темы как на скрине */
-        .top-status-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .streak-badge {
-            background: var(--card-bg);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            color: #ff9500;
-            border: 1px solid var(--border-color);
-        }
-        .theme-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--card-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            cursor: pointer;
-            border: 1px solid var(--border-color);
-            transition: transform 0.1s;
-        }
-        .theme-btn:active { transform: scale(0.9); }
-
-        .screen-title { font-size: 26px; font-weight: 800; margin: 0 0 6px 0; }
-        .screen-subtitle { font-size: 14px; color: var(--text-sub); margin: 0 0 20px 0; }
+        .screen-title { font-size: 26px; font-weight: 800; margin: 0 0 16px 0; }
 
         /* Карточки */
         .card {
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
-            border: 1px solid var(--border-color);
+            background: var(--card-bg); border-radius: 20px; padding: 16px; margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border-color);
         }
-
         .card-label { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .unit-display { color: var(--accent-purple); font-weight: 800; background: var(--accent-purple-light); padding: 2px 10px; border-radius: 12px; font-size: 14px; }
 
         /* Ползунки */
-        input[type="range"] {
-            -webkit-appearance: none; width: 100%; height: 10px; background: var(--border-color); border-radius: 5px; outline: none; margin: 15px 0;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-purple); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        /* Вода */
-        .water-interface { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .water-btn {
-            background: var(--accent-purple-light); color: var(--accent-purple); border: none; padding: 12px; border-radius: 16px; font-weight: 700; font-size: 15px; cursor: pointer; flex: 1; margin: 0 5px; text-align: center;
-        }
-        .water-btn:active { opacity: 0.7; }
-
-        /* Привычки */
-        .habit-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
-        .habit-row:last-child { border-bottom: none; }
-        .habit-text { font-size: 15px; font-weight: 500; }
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 8px; background: var(--border-color); border-radius: 4px; margin: 10px 0; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-purple); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
 
         /* iOS Switch */
-        .ios-switch { position: relative; display: inline-block; width: 51px; height: 31px; }
+        .ios-switch { position: relative; display: inline-block; width: 46px; height: 28px; }
         .ios-switch input { opacity: 0; width: 0; height: 0; }
         .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px; }
-        .slider-switch:before { position: absolute; content: ""; height: 27px; width: 27px; left: 2px; bottom: 2px; background-color: #ffffff; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .slider-switch:before { position: absolute; content: ""; height: 24px; width: 24px; left: 2px; bottom: 2px; background-color: #ffffff; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         input:checked + .slider-switch { background-color: var(--accent-purple); }
-        input:checked + .slider-switch:before { transform: translateX(20px); }
+        input:checked + .slider-switch:before { transform: translateX(18px); }
 
-        /* Профиль инпуты */
-        .input-group { margin-bottom: 16px; }
-        .input-group label { display: block; font-size: 14px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
-        .ios-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 16px; outline: none; }
+        /* Поля ввода и Textarea */
+        .ios-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 16px; outline: none; margin-bottom: 10px; font-family: var(--font-sans); }
+        textarea.ios-input { resize: vertical; min-height: 80px; }
 
-        /* Сегменты */
-        .segmented-control { display: flex; background: var(--bg-color); border-radius: 8px; padding: 2px; margin-bottom: 20px; }
-        .segment { flex: 1; text-align: center; padding: 6px 0; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; color: var(--text-sub); transition: 0.2s; }
-        .segment.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-        .main-btn {
-            background: var(--accent-purple); color: #ffffff; border: none; border-radius: 20px; padding: 16px; width: 100%; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px var(--accent-purple-light);
-        }
+        /* Кнопки */
+        .main-btn { background: var(--accent-purple); color: #ffffff; border: none; border-radius: 16px; padding: 14px; width: 100%; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .main-btn:active { transform: scale(0.98); }
+        
+        .row-btns { display: flex; gap: 10px; }
+        .btn-green { background: rgba(52, 199, 89, 0.1); color: var(--success-green); border: none; padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; }
+        .btn-red { background: rgba(255, 59, 48, 0.1); color: var(--alert-red); border: none; padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; }
+
+        /* КБЖУ Стили */
+        .macro-row { display: flex; justify-content: space-between; text-align: center; margin-bottom: 16px; }
+        .macro-item { flex: 1; }
+        .macro-val { font-size: 18px; font-weight: 800; color: var(--accent-purple); }
+        .macro-lbl { font-size: 12px; color: var(--text-sub); }
+        
+        /* Фото еды */
+        .food-photo-preview { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 10px; background: var(--bg-color); display: flex; align-items: center; justify-content: center; color: var(--text-sub); font-size: 40px; }
+        .food-entry { border-bottom: 1px solid var(--border-color); padding: 12px 0; display: flex; gap: 12px; align-items: center; }
+        .food-entry:last-child { border-bottom: none; }
+        .food-entry img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
+        .food-entry-info { flex: 1; }
+        .food-entry-title { font-weight: 600; font-size: 15px; }
+        .food-entry-macros { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+
+        /* Финансы Стили */
+        .balance-card { text-align: center; padding: 24px 16px; }
+        .balance-val { font-size: 32px; font-weight: 800; margin: 10px 0; }
+        .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .tx-row:last-child { border-bottom: none; }
+        .tx-title { font-weight: 600; font-size: 15px; }
+        .tx-date { font-size: 12px; color: var(--text-sub); }
+        .tx-amount.plus { color: var(--success-green); font-weight: 700; }
+        .tx-amount.minus { color: var(--text-main); font-weight: 700; }
 
         /* Таббар */
-        .tab-bar {
-            position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); height: 75px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border-color); padding-bottom: 12px; z-index: 100;
-        }
-        .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--text-sub); font-size: 11px; font-weight: 600; cursor: pointer; width: 33%; }
+        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); height: 75px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border-color); padding-bottom: 12px; z-index: 100; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--text-sub); font-size: 10px; font-weight: 600; cursor: pointer; width: 25%; }
         .tab-item.active { color: var(--accent-purple); }
-        .tab-icon { font-size: 24px; margin-bottom: 2px; }
+        .tab-icon { font-size: 22px; margin-bottom: 4px; }
 
         .app-screen { display: none; }
         .app-screen.active { display: block; }
@@ -163,175 +118,189 @@
 <body>
 
     <div class="tg-header">
-        <div class="close-btn">Закрыть</div>
+        <button class="theme-btn" id="theme-toggle-btn" onclick="toggleTheme()">☀️</button>
         <div class="app-title">
-            <h1>FLOW-13</h1>
-            <span>мини-приложение</span>
+            <h1>ДНЕВНИК ЖИЗНИ</h1>
+            <span>FLOW-13</span>
         </div>
-        <div class="more-btn">•••</div>
+        <div style="width: 30px;"></div>
     </div>
 
     <div class="container">
-        
-        <!-- Стрик и переключатель темы (в точности как на скрине) -->
-        <div class="top-status-row">
-            <div class="streak-badge">🔥 3 дней</div>
-            <div class="theme-btn" id="theme-toggle-btn" onclick="toggleTheme()">☀️</div>
+
+        <!-- ЭКРАН 1: ГЛАВНЫЙ (Чек-ин, Привычки, Самопрограммирование) -->
+        <div id="screen-main" class="app-screen active">
+            <h2 class="screen-title">Состояние</h2>
+
+            <div class="card">
+                <div class="card-label"><span>⚡️ Энергия</span> <span id="val-energy" style="font-weight: 800; color: var(--accent-purple);">7/10</span></div>
+                <input type="range" id="input-energy" min="1" max="10" value="7" oninput="syncSliders(); vibeLight()">
+                
+                <div class="card-label" style="margin-top: 15px;"><span>😊 Настроение</span> <span id="val-mood" style="font-weight: 800; color: var(--accent-purple);">8/10</span></div>
+                <input type="range" id="input-mood" min="1" max="10" value="8" oninput="syncSliders(); vibeLight()">
+                
+                <div class="card-label" style="margin-top: 15px;"><span>🌪 Стресс</span> <span id="val-stress" style="font-weight: 800; color: var(--alert-red);">3/10</span></div>
+                <input type="range" id="input-stress" min="1" max="10" value="3" oninput="syncSliders(); vibeLight()">
+            </div>
+
+            <div class="card">
+                <div class="card-label">🧠 Дневник самопрограммирования</div>
+                <textarea class="ios-input" placeholder="Моя главная цель на сегодня. За что я благодарен? Какую установку я себе даю?"></textarea>
+            </div>
+
+            <div class="card">
+                <div class="card-label">⚙️ Трекер привычек</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="font-weight: 500;">Чтение (20 мин)</span>
+                    <label class="ios-switch"><input type="checkbox" onchange="vibeLight()"><span class="slider-switch"></span></label>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="font-weight: 500;">Уход / Симметрия лица</span>
+                    <label class="ios-switch"><input type="checkbox" onchange="vibeLight()"><span class="slider-switch"></span></label>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+                    <span style="font-weight: 500;">Растяжка ног после смены</span>
+                    <label class="ios-switch"><input type="checkbox" onchange="vibeLight()"><span class="slider-switch"></span></label>
+                </div>
+            </div>
+            
+            <button class="main-btn" onclick="vibeHeavy()">Зафиксировать день</button>
         </div>
 
-        <!-- ЭКРАН 1: ЧЕК-ИН -->
-        <div id="screen-checkin" class="app-screen active">
-            <h2 class="screen-title">Твой энерго-баланс</h2>
-            <p class="screen-subtitle">Настрой параметры под свое текущее состояние</p>
 
-            <!-- ВСЕ МЕТРИКИ ВЕРНУЛИСЬ -->
-            <div class="card">
-                <div class="card-label"><span>⏱ Сколько часов ты поспал?</span> <span class="unit-display" id="val-sleep">7.5 ч</span></div>
-                <input type="range" id="input-sleep" min="0" max="12" step="0.5" value="7.5" oninput="syncValues(); vibeLight()">
-            </div>
+        <!-- ЭКРАН 2: ПИТАНИЕ & ФОТО (КБЖУ) -->
+        <div id="screen-food" class="app-screen">
+            <h2 class="screen-title">Дневник КБЖУ</h2>
 
             <div class="card">
-                <div class="card-label"><span>🧠 Доля глубокой фазы сна</span> <span class="unit-display" id="val-deep">45%</span></div>
-                <input type="range" id="input-deep" min="0" max="100" step="5" value="45" oninput="syncValues(); vibeLight()">
-            </div>
-
-            <div class="card">
-                <div class="card-label"><span>💻 Чистая работа в фокусе</span> <span class="unit-display" id="val-work">4.0 ч</span></div>
-                <input type="range" id="input-work" min="0" max="12" step="0.5" value="4.0" oninput="syncValues(); vibeLight()">
-            </div>
-
-            <div class="card">
-                <div class="card-label"><span>📱 Экранное время</span> <span class="unit-display" id="val-screen">5.5 ч</span></div>
-                <input type="range" id="input-screen" min="0" max="24" step="0.5" value="5.5" oninput="syncValues(); vibeLight()">
-            </div>
-
-            <div class="card">
-                <div class="card-label"><span>💧 Счетчик чистой воды</span> <span class="unit-display" id="val-water">1250 мл</span></div>
-                <div class="water-interface">
-                    <button class="water-btn" onclick="addWater(-250)">- 250 мл</button>
-                    <button class="water-btn" onclick="addWater(250)">+ 250 мл</button>
+                <div class="macro-row">
+                    <div class="macro-item"><div class="macro-val">1850</div><div class="macro-lbl">ККАЛ</div></div>
+                    <div class="macro-item"><div class="macro-val">120</div><div class="macro-lbl">БЕЛКИ</div></div>
+                    <div class="macro-item"><div class="macro-val">75</div><div class="macro-lbl">ЖИРЫ</div></div>
+                    <div class="macro-item"><div class="macro-val">150</div><div class="macro-lbl">УГЛЕВОДЫ</div></div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-label">⚙️ Выполнение протоколов</div>
-                <div class="habit-row">
-                    <span class="habit-text">⌨️ Написание кода / Свой продукт</span>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="habit-code" checked onchange="vibeLight()">
-                        <span class="slider-switch"></span>
-                    </label>
+                <div class="card-label">📸 Добавить прием пищи</div>
+                <!-- Интеграция камеры: capture="environment" открывает камеру телефона -->
+                <label for="food-upload" style="display: block; cursor: pointer;">
+                    <img id="preview-img" class="food-photo-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238e8e93'><path d='M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10z'/></svg>" alt="Camera">
+                </label>
+                <input type="file" id="food-upload" accept="image/*" capture="environment" style="display: none;" onchange="previewFile()">
+                
+                <input type="text" class="ios-input" placeholder="Название (например: Сырный суп)">
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" class="ios-input" placeholder="Ккал">
+                    <input type="number" class="ios-input" placeholder="Б">
+                    <input type="number" class="ios-input" placeholder="Ж">
+                    <input type="number" class="ios-input" placeholder="У">
                 </div>
-                <div class="habit-row">
-                    <span class="habit-text">🫁 Дыхательные практики / ЦНС</span>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="habit-breath" onchange="vibeLight()">
-                        <span class="slider-switch"></span>
-                    </label>
-                </div>
-                <div class="habit-row">
-                    <span class="habit-text">#️⃣ Без экрана первый час утра</span>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="habit-noscreen" onchange="vibeLight()">
-                        <span class="slider-switch"></span>
-                    </label>
-                </div>
+                <button class="main-btn" onclick="vibeLight()">Сохранить блюдо</button>
             </div>
 
-            <button class="main-btn" onclick="processMetrics(); vibeHeavy()">Сохранить лог системы</button>
+            <div class="card">
+                <div class="card-label">Сегодня</div>
+                
+                <div class="food-entry">
+                    <div style="width: 60px; height: 60px; background: url('https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=150&q=80') center/cover; border-radius: 12px;"></div>
+                    <div class="food-entry-info">
+                        <div class="food-entry-title">Паста с курицей и грибами</div>
+                        <div class="food-entry-macros">520 ккал • Б:35 Ж:20 У:50</div>
+                    </div>
+                </div>
+                
+                <div class="food-entry">
+                    <div style="width: 60px; height: 60px; background: url('https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=150&q=80') center/cover; border-radius: 12px;"></div>
+                    <div class="food-entry-info">
+                        <div class="food-entry-title">Мясной кебаб</div>
+                        <div class="food-entry-macros">480 ккал • Б:40 Ж:30 У:10</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- ЭКРАН 2: СТАТИСТИКА -->
+
+        <!-- ЭКРАН 3: ФИНАНСЫ -->
+        <div id="screen-finance" class="app-screen">
+            <h2 class="screen-title">Капитал</h2>
+
+            <div class="card balance-card">
+                <div style="color: var(--text-sub); font-size: 14px; font-weight: 600;">ТЕКУЩИЙ БАЛАНС</div>
+                <div class="balance-val">₽ 142,500</div>
+                <div class="row-btns">
+                    <button class="btn-green" onclick="vibeLight()">+ Доход</button>
+                    <button class="btn-red" onclick="vibeLight()">- Расход</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Добавить операцию</div>
+                <input type="number" class="ios-input" placeholder="Сумма (₽)">
+                <input type="text" class="ios-input" placeholder="Категория / Описание">
+                <button class="main-btn" onclick="vibeHeavy()">Записать</button>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Последние транзакции</div>
+                
+                <div class="tx-row">
+                    <div>
+                        <div class="tx-title">Разработка тех. карт</div>
+                        <div class="tx-date">Сегодня, 14:30</div>
+                    </div>
+                    <div class="tx-amount plus">+ 15,000 ₽</div>
+                </div>
+                <div class="tx-row">
+                    <div>
+                        <div class="tx-title">Ингредиенты для лимонадов</div>
+                        <div class="tx-date">Сегодня, 12:00</div>
+                    </div>
+                    <div class="tx-amount minus">- 3,200 ₽</div>
+                </div>
+                <div class="tx-row">
+                    <div>
+                        <div class="tx-title">Смена в заведении</div>
+                        <div class="tx-date">Вчера, 03:00</div>
+                    </div>
+                    <div class="tx-amount plus">+ 6,500 ₽</div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ЭКРАН 4: СТАТИСТИКА (Оставлен базовым) -->
         <div id="screen-stats" class="app-screen">
-            <h2 class="screen-title">Твоя статистика</h2>
-            <p class="screen-subtitle">Динамика твоих состояний</p>
-            
-            <div class="segmented-control">
-                <div class="segment active" onclick="switchTimeframe(this); vibeLight()">7 дней</div>
-                <div class="segment" onclick="switchTimeframe(this); vibeLight()">Месяц</div>
-                <div class="segment" onclick="switchTimeframe(this); vibeLight()">Год</div>
+            <h2 class="screen-title">Аналитика</h2>
+            <div class="card" style="height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-sub);">
+                Здесь будет сводный график твоей жизни
             </div>
-
-            <!-- График-заглушка в стиле скрина -->
-            <div class="card" style="height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <div style="display: flex; gap: 10px; margin-bottom: 20px; font-size: 12px; font-weight: bold;">
-                    <span style="color: #3498db;">■ Сон</span>
-                    <span style="color: #f1c40f;">■ Утро</span>
-                    <span style="color: #e74c3c;">■ Настроение</span>
-                </div>
-                <p style="color: var(--text-sub); text-align: center; font-size: 14px;">[График динамики отрисовывается...]</p>
-            </div>
-
-            <div id="advices-target"></div>
-        </div>
-
-        <!-- ЭКРАН 3: ПРОФИЛЬ -->
-        <div id="screen-profile" class="app-screen">
-            <h2 class="screen-title">Биометрия</h2>
-            <p class="screen-subtitle">Базовые параметры для ИИ-алгоритмов</p>
-
-            <div class="card">
-                <div class="input-group">
-                    <label>Пол</label>
-                    <select id="prof-gender" class="ios-input" onchange="vibeLight()">
-                        <option value="male" selected>Мужской</option>
-                        <option value="female">Женский</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Возраст (лет)</label>
-                    <input type="number" id="prof-age" class="ios-input" value="28" onchange="vibeLight()">
-                </div>
-                <div class="input-group">
-                    <label>Рост (см)</label>
-                    <input type="number" id="prof-height" class="ios-input" value="180" onchange="vibeLight()">
-                </div>
-                <div class="input-group">
-                    <label>Вес (кг)</label>
-                    <input type="number" id="prof-weight" class="ios-input" value="75" onchange="vibeLight()">
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-label">🔔 Авто-уведомления</div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 15px;">Напоминать о чек-ине</span>
-                    <label class="ios-switch">
-                        <input type="checkbox" id="notif-toggle" onchange="toggleNotifications(); vibeLight()">
-                        <span class="slider-switch"></span>
-                    </label>
-                </div>
-                <div class="input-group" id="time-input-group" style="display: none; margin-top: 15px;">
-                    <label>Время пуша</label>
-                    <input type="time" id="notif-time" class="ios-input" value="20:00" onchange="vibeLight()">
-                </div>
-            </div>
-            
-            <button class="main-btn" onclick="saveProfile(); vibeHeavy()">Обновить базу</button>
         </div>
 
     </div>
 
     <!-- ТАБ БАР -->
     <div class="tab-bar">
-        <div id="tab-checkin" class="tab-item active" onclick="switchTab('checkin'); vibeLight()">
-            <span class="tab-icon">📝</span><span>Чек-ин</span>
+        <div id="tab-main" class="tab-item active" onclick="switchTab('main'); vibeLight()">
+            <span class="tab-icon">📝</span><span>Дневник</span>
+        </div>
+        <div id="tab-food" class="tab-item" onclick="switchTab('food'); vibeLight()">
+            <span class="tab-icon">🥗</span><span>КБЖУ</span>
+        </div>
+        <div id="tab-finance" class="tab-item" onclick="switchTab('finance'); vibeLight()">
+            <span class="tab-icon">💳</span><span>Финансы</span>
         </div>
         <div id="tab-stats" class="tab-item" onclick="switchTab('stats'); vibeLight()">
-            <span class="tab-icon">📊</span><span>Статистика</span>
-        </div>
-        <div id="tab-profile" class="tab-item" onclick="switchTab('profile'); vibeLight()">
-            <span class="tab-icon">⚙️</span><span>Профиль</span>
+            <span class="tab-icon">📊</span><span>Отчеты</span>
         </div>
     </div>
 
     <script>
-        let currentWater = 1250;
         let isDarkMode = false;
         const tg = window.Telegram?.WebApp;
         if(tg) { tg.expand(); }
 
-        // ВИБРАЦИЯ
+        // Вибрация
         function vibeLight() {
             if (tg && tg.HapticFeedback) { tg.HapticFeedback.impactOccurred('light'); }
             else if (navigator.vibrate) { navigator.vibrate(15); }
@@ -341,111 +310,44 @@
             else if (navigator.vibrate) { navigator.vibrate([30, 40, 30]); }
         }
 
-        // ТЕМА: Переключатель в виде Солнца/Луны
+        // Тема
         function toggleTheme() {
             isDarkMode = !isDarkMode;
             document.body.classList.toggle('dark-theme');
-            const themeBtn = document.getElementById('theme-toggle-btn');
-            themeBtn.innerText = isDarkMode ? '🌙' : '☀️';
+            document.getElementById('theme-toggle-btn').innerText = isDarkMode ? '🌙' : '☀️';
             vibeLight();
         }
 
-        // ВКЛАДКИ
+        // Вкладки
         function switchTab(tabId) {
             document.querySelectorAll('.app-screen, .tab-item').forEach(el => el.classList.remove('active'));
             document.getElementById('screen-' + tabId).classList.add('active');
             document.getElementById('tab-' + tabId).classList.add('active');
         }
 
-        // ТАЙМФРЕЙМЫ
-        function switchTimeframe(element) {
-            document.querySelectorAll('.segment').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
+        // Ползунки состояния
+        function syncSliders() {
+            document.getElementById('val-energy').innerText = document.getElementById('input-energy').value + '/10';
+            document.getElementById('val-mood').innerText = document.getElementById('input-mood').value + '/10';
+            document.getElementById('val-stress').innerText = document.getElementById('input-stress').value + '/10';
         }
 
-        // СИНХРОНИЗАЦИЯ ПОЛЗУНКОВ
-        function syncValues() {
-            document.getElementById('val-sleep').innerText = parseFloat(document.getElementById('input-sleep').value).toFixed(1) + ' ч';
-            document.getElementById('val-deep').innerText = document.getElementById('input-deep').value + '%';
-            document.getElementById('val-work').innerText = parseFloat(document.getElementById('input-work').value).toFixed(1) + ' ч';
-            document.getElementById('val-screen').innerText = parseFloat(document.getElementById('input-screen').value).toFixed(1) + ' ч';
+        // Превью фото с камеры
+        function previewFile() {
+            const preview = document.getElementById('preview-img');
+            const file = document.querySelector('input[type=file]').files[0];
+            const reader = new FileReader();
+
+            reader.addEventListener("load", function () {
+                preview.src = reader.result;
+                preview.style.border = "none";
+            }, false);
+
+            if (file) {
+                reader.readAsDataURL(file);
+                vibeLight();
+            }
         }
-
-        function addWater(amount) {
-            currentWater = Math.max(0, currentWater + amount);
-            document.getElementById('val-water').innerText = currentWater + ' мл';
-            vibeLight();
-        }
-
-        // УВЕДОМЛЕНИЯ
-        function toggleNotifications() {
-            const isChecked = document.getElementById('notif-toggle').checked;
-            document.getElementById('time-input-group').style.display = isChecked ? 'block' : 'none';
-        }
-        function saveProfile() { alert("Биометрия и настройки сохранены!"); }
-
-        // СЛОЖНЫЙ АНАЛИЗ (все метрики + биометрия)
-        function processMetrics() {
-            const sleep = parseFloat(document.getElementById('input-sleep').value);
-            const deepSleep = parseInt(document.getElementById('input-deep').value);
-            const work = parseFloat(document.getElementById('input-work').value);
-            const screen = parseFloat(document.getElementById('input-screen').value);
-            const weight = parseFloat(document.getElementById('prof-weight').value) || 75;
-            
-            const waterTarget = Math.round(weight * 35); 
-            
-            let adviceHtml = "<h3>🧠 Алгоритмический разбор</h3>";
-            let allGood = true;
-
-            if (currentWater < waterTarget) {
-                allGood = false;
-                adviceHtml += `
-                <div class="card" style="border-left: 5px solid var(--alert-red); background: rgba(255, 59, 48, 0.03)">
-                    <div style="color: var(--alert-red); font-weight: 700; margin-bottom: 6px;">💧 Дефицит воды</div>
-                    <p style="font-size: 14px; margin: 0;">Твоя норма при весе ${weight} кг — <b>${waterTarget} мл</b>. Гипоксия снижает продуктивность.</p>
-                </div>`;
-            }
-
-            if (screen > 6 && deepSleep < 20) {
-                allGood = false;
-                adviceHtml += `
-                <div class="card" style="border-left: 5px solid #ff9500; background: rgba(255, 149, 0, 0.03)">
-                    <div style="color: #ff9500; font-weight: 700; margin-bottom: 6px;">📱 Синий спектр убил фазу</div>
-                    <p style="font-size: 14px; margin: 0;">Ты много сидел в экране (${screen} ч), глубокий сон упал до ${deepSleep}%. Отложи телефон за час до кровати.</p>
-                </div>`;
-            }
-
-            if (work > 5 && !document.getElementById('habit-code').checked) {
-                allGood = false;
-                adviceHtml += `
-                <div class="card" style="border-left: 5px solid #8e44ad; background: rgba(142, 68, 173, 0.05)">
-                    <div style="color: #8e44ad; font-weight: 700; margin-bottom: 6px;">⌨️ Расфокус в работе</div>
-                    <p style="font-size: 14px; margin: 0;">Ты отметил фокусную работу, но свой продукт / код простаивает. Направь этот ресурс на главное.</p>
-                </div>`;
-            }
-
-            if (!document.getElementById('habit-noscreen').checked) {
-                allGood = false;
-                adviceHtml += `
-                <div class="card" style="border-left: 5px solid var(--alert-red); background: rgba(255, 59, 48, 0.03)">
-                    <div style="color: var(--alert-red); font-weight: 700; margin-bottom: 6px;">#️⃣ Дофаминовая яма с утра</div>
-                    <p style="font-size: 14px; margin: 0;">Взял телефон в первый час. Завтра строгое табу на скроллинг до завтрака.</p>
-                </div>`;
-            }
-
-            if (allGood) {
-                adviceHtml += `
-                <div class="card" style="border-left: 5px solid #34c759; background: rgba(52, 199, 89, 0.03)">
-                    <div style="color: #34c759; font-weight: 700; margin-bottom: 6px;">🟢 Система в потоке</div>
-                    <p style="font-size: 14px; margin: 0;">Все метрики в идеальной зоне. Ты выжимаешь максимум из своего ресурса сегодня.</p>
-                </div>`;
-            }
-
-            document.getElementById('advices-target').innerHTML = adviceHtml;
-            switchTab('stats');
-        }
-
-        syncValues();
     </script>
 </body>
 </html>
