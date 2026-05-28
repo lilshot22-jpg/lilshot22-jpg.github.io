@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLOW-13 // LIFE DIARY V12</title>
+    <title>FLOW-13 // LIFE DIARY V13</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,6 +16,8 @@
             --accent-purple-light: rgba(142, 68, 173, 0.1);
             --alert-red: #ff3b30;
             --success-green: #34c759;
+            --water-blue: #32ade6;
+            --sleep-indigo: #5e5ce6;
             --border-color: #e5e5ea;
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             transition: background-color 0.3s ease, color 0.3s ease;
@@ -32,7 +34,6 @@
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         body { background-color: var(--bg-color); color: var(--text-main); font-family: var(--font-sans); margin: 0; padding: 0; padding-bottom: 90px; }
 
         /* Шапка */
@@ -49,8 +50,8 @@
         .card { background: var(--card-bg); border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border-color); overflow: hidden; }
         .card-label { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .unit-display { color: var(--accent-purple); font-weight: 800; background: var(--accent-purple-light); padding: 2px 10px; border-radius: 12px; font-size: 14px; }
-
-        /* Советы (Тултипы) */
+        
+        /* Советы */
         .tip-box { background: var(--accent-purple-light); color: var(--accent-purple); padding: 12px 14px; border-radius: 12px; font-size: 13px; margin-top: 14px; line-height: 1.4; font-weight: 500; display: flex; align-items: flex-start; gap: 8px; }
         .tip-icon { font-size: 16px; flex-shrink: 0; }
 
@@ -61,7 +62,7 @@
         /* Вода */
         .water-interface { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 10px; }
         .water-btn { background: var(--accent-purple-light); color: var(--accent-purple); border: none; padding: 12px; border-radius: 16px; font-weight: 700; font-size: 15px; cursor: pointer; flex: 1; text-align: center; }
-        .water-btn:active { opacity: 0.7; }
+        .water-norm { font-size: 11px; color: var(--text-sub); display: block; text-align: right; margin-top: 4px; font-weight: 600;}
 
         /* iOS Switch */
         .ios-switch { position: relative; display: inline-block; width: 46px; height: 28px; flex-shrink: 0; }
@@ -74,13 +75,13 @@
         /* Поля ввода */
         .ios-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 16px; outline: none; margin-bottom: 10px; font-family: var(--font-sans); box-sizing: border-box; }
         textarea.ios-input { resize: vertical; min-height: 80px; }
-        select.ios-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>"); background-repeat: no-repeat; background-position-x: 95%; background-position-y: 50%; }
+        select.ios-input { appearance: none; -webkit-appearance: none; }
 
         /* Кнопки */
         .main-btn { background: var(--accent-purple); color: #ffffff; border: none; border-radius: 16px; padding: 14px; width: 100%; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; transition: background-color 0.3s; }
-        .main-btn:active { transform: scale(0.98); }
         .secondary-btn { background: var(--accent-purple-light); color: var(--accent-purple); border: none; border-radius: 12px; padding: 10px; width: 100%; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        
+        .insta-btn { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; border: none; border-radius: 16px; padding: 14px; width: 100%; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+
         /* Загрузка фото */
         .file-upload-btn { background: var(--accent-purple-light); color: var(--accent-purple); border: none; border-radius: 12px; padding: 12px; width: 100%; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; display: inline-block; box-sizing: border-box; margin-bottom: 10px;}
         .file-upload-btn input[type="file"] { display: none; }
@@ -97,11 +98,15 @@
         .balance-card { text-align: center; padding: 24px 16px; }
         .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
         
-        /* Аналитика */
+        /* Аналитика и чекбоксы */
         .stat-box { background: var(--accent-purple-light); padding: 20px; border-radius: 16px; text-align: center; margin-bottom: 16px; }
         .stat-num { font-size: 40px; font-weight: 800; color: var(--accent-purple); }
-        .chart-container { position: relative; height: 200px; width: 100%; margin-top: 15px; }
-
+        .chart-container { position: relative; height: 250px; width: 100%; margin-top: 15px; }
+        
+        .chart-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+        .filter-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text-sub); cursor: pointer; background: var(--bg-color); padding: 6px 12px; border-radius: 16px; border: 1px solid var(--border-color); }
+        .filter-label input { accent-color: var(--accent-purple); width: 14px; height: 14px; }
+        
         /* Таббар */
         .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); height: 75px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border-color); padding-bottom: 12px; z-index: 100; }
         .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--text-sub); font-size: 10px; font-weight: 600; cursor: pointer; width: 20%; }
@@ -111,7 +116,6 @@
         .app-screen { display: none; }
         .app-screen.active { display: block; }
         
-        /* Сетка для времени */
         .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
         .time-col { display: flex; flex-direction: column; align-items: center; }
         .time-col input[type="time"] { text-align: center; margin-bottom: 0; padding: 12px 5px; }
@@ -134,22 +138,27 @@
         <div id="screen-main" class="app-screen active">
             
             <div class="card">
-                <div class="card-label"><span>⏰ Режим сна</span></div>
+                <div class="card-label"><span>⏰ Режим сна</span> <span class="unit-display" id="val-sleep-duration">0 ч.</span></div>
                 <div class="time-grid">
                     <div class="time-col">
                         <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 6px;">Отбой</div>
-                        <input type="time" id="sleep-time" class="ios-input" onchange="updateAppValue('sleepTime', this.value)">
+                        <input type="time" id="sleep-time" class="ios-input" onchange="updateSleep()">
                     </div>
                     <div class="time-col">
                         <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 6px;">Подъем</div>
-                        <input type="time" id="wake-time" class="ios-input" onchange="updateAppValue('wakeTime', this.value)">
+                        <input type="time" id="wake-time" class="ios-input" onchange="updateSleep()">
                     </div>
                 </div>
-                <button class="secondary-btn" onclick="scheduleNotification()">Включить автооповещение</button>
             </div>
 
             <div class="card">
-                <div class="card-label"><span>💧 Вода</span> <span class="unit-display" id="val-water">0 мл</span></div>
+                <div class="card-label">
+                    <span>💧 Вода</span> 
+                    <div>
+                        <span class="unit-display" id="val-water">0 мл</span>
+                    </div>
+                </div>
+                <span class="water-norm" id="water-norm-text">Цель: -- мл</span>
                 <div class="water-interface">
                     <button class="water-btn" onclick="addWater(-250)">- 250 мл</button>
                     <button class="water-btn" onclick="addWater(250)">+ 250 мл</button>
@@ -158,7 +167,7 @@
 
             <h2 class="screen-title" style="margin-top: 24px;">Состояние</h2>
             <div class="card">
-                <div class="card-label"><span>⚡️ Энергия</span> <span id="val-energy" style="font-weight: 800; color: var(--accent-purple);">7/10</span></div>
+                <div class="card-label"><span>⚡️ Энергия</span> <span id="val-energy" style="font-weight: 800; color: var(--success-green);">7/10</span></div>
                 <input type="range" id="input-energy" min="1" max="10" oninput="updateAppValue('energy', this.value)">
                 
                 <div class="card-label" style="margin-top: 15px;"><span>😊 Настроение</span> <span id="val-mood" style="font-weight: 800; color: var(--accent-purple);">8/10</span></div>
@@ -169,8 +178,8 @@
             </div>
 
             <div class="card">
-                <div class="card-label">🧠 Главный фокус (Задача дня)</div>
-                <textarea id="input-diary" class="ios-input" placeholder="Опиши одну главную задачу. Сделай её — и день уже прошел не зря." oninput="updateAppValue('diary', this.value)"></textarea>
+                <div class="card-label">🧠 Задача дня</div>
+                <textarea id="input-diary" class="ios-input" placeholder="Главный фокус на сегодня..." oninput="updateAppValue('diary', this.value)"></textarea>
             </div>
 
             <div class="card">
@@ -182,77 +191,64 @@
                 </div>
             </div>
             
-            <!-- Динамический блок советов, который появляется после сохранения -->
             <div id="day-insights" style="display: none; flex-direction: column; gap: 10px; margin-bottom: 16px;"></div>
 
             <button id="save-day-btn" class="main-btn" onclick="saveDay()">Зафиксировать день</button>
         </div>
 
-        <!-- ЭКРАН 2: ПИТАНИЕ (ТРЕКИНГ + ФОТО) -->
+        <!-- ЭКРАН 2: ПИТАНИЕ -->
         <div id="screen-food" class="app-screen">
             <h2 class="screen-title">Питание</h2>
             
             <div class="card">
-                <div class="card-label">Фото рациона</div>
-                <label class="file-upload-btn">
-                    📷 Загрузить фото еды
-                    <input type="file" accept="image/*" onchange="handleFoodPhoto(this)">
-                </label>
-                <div class="photo-container">
-                    <img id="food-photo-preview" style="width: 100%; border-radius: 12px; margin-top: 10px; display: none; object-fit: cover;" />
-                    <button id="remove-photo-btn" class="remove-photo-btn" onclick="removeFoodPhoto()">×</button>
+                <div class="card-label">
+                    КБЖУ Трекер
+                    <div style="font-size: 11px; color: var(--text-sub); font-weight: 600;" id="kbju-norm-text">Норма: не задана</div>
                 </div>
-                <div class="tip-box">
-                    <span class="tip-icon">💡</span>
-                    <span>Визуальный дневник помогает лучше контролировать объемы порций и не срываться на "случайные" перекусы.</span>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-label">КБЖУ Трекер</div>
                 <div style="display: flex; gap: 8px; margin-bottom: 15px;">
                     <div style="flex: 1; text-align: center;">
                         <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Ккал</div>
                         <input type="number" id="input-kcal" class="ios-input" style="text-align: center; margin-bottom: 0; padding: 12px 4px;" placeholder="0" oninput="updateAppValue('kcal', this.value)">
                     </div>
                     <div style="flex: 1; text-align: center;">
-                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Белки</div>
+                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Б</div>
                         <input type="number" id="input-protein" class="ios-input" style="text-align: center; margin-bottom: 0; padding: 12px 4px;" placeholder="0" oninput="updateAppValue('protein', this.value)">
                     </div>
                     <div style="flex: 1; text-align: center;">
-                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Жиры</div>
+                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Ж</div>
                         <input type="number" id="input-fat" class="ios-input" style="text-align: center; margin-bottom: 0; padding: 12px 4px;" placeholder="0" oninput="updateAppValue('fat', this.value)">
                     </div>
                     <div style="flex: 1; text-align: center;">
-                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">Углеводы</div>
+                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600;">У</div>
                         <input type="number" id="input-carbs" class="ios-input" style="text-align: center; margin-bottom: 0; padding: 12px 4px;" placeholder="0" oninput="updateAppValue('carbs', this.value)">
                     </div>
                 </div>
 
-                <div class="card-label">Рацион</div>
-                <textarea id="input-food-list" class="ios-input" placeholder="Что было съедено за день? Запиши приемы пищи." oninput="updateAppValue('foodList', this.value)"></textarea>
-                <div class="tip-box">
-                    <span class="tip-icon">💡</span>
-                    <span>Белки — стройматериал мышц, жиры — топливо для гормонов, сложные углеводы — долгая энергия. Держи баланс.</span>
+                <div class="card-label">Фото рациона</div>
+                <label class="file-upload-btn">📷 Загрузить фото<input type="file" accept="image/*" onchange="handleFoodPhoto(this)"></label>
+                <div class="photo-container">
+                    <img id="food-photo-preview" style="width: 100%; border-radius: 12px; margin-top: 10px; display: none; object-fit: cover;" />
+                    <button id="remove-photo-btn" class="remove-photo-btn" onclick="removeFoodPhoto()">×</button>
                 </div>
+                
+                <textarea id="input-food-list" class="ios-input" style="margin-top: 15px;" placeholder="Что было съедено за день?" oninput="updateAppValue('foodList', this.value)"></textarea>
             </div>
         </div>
 
-        <!-- ЭКРАН 3: ФИНАНСЫ (ПОЛНОЦЕННЫЙ ТРЕКЕР) -->
+        <!-- ЭКРАН 3: ФИНАНСЫ -->
         <div id="screen-finance" class="app-screen">
             <h2 class="screen-title">Капитал</h2>
             
             <div class="card balance-card">
                 <div style="color: var(--text-sub); font-size: 14px; font-weight: 600;">ТЕКУЩИЙ БАЛАНС (₽)</div>
                 <div id="display-balance" style="font-size: 38px; font-weight: 800; margin: 10px 0; color: var(--text-main);">0</div>
-                <div class="tip-box" style="text-align: left;">
-                    <span class="tip-icon">💡</span>
-                    <span>Фиксируй даже мелкие расходы. Понимание того, куда уходят деньги, — первый шаг к финансовой безопасности и спокойствию.</span>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <input type="number" id="manual-balance" class="ios-input" placeholder="Свой баланс" style="margin-bottom: 0;">
+                    <button class="secondary-btn" style="margin-top: 0; width: auto; padding: 0 20px;" onclick="setManualBalance()">Задать</button>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-label">Добавить операцию</div>
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                     <input type="number" id="tx-amount" class="ios-input" placeholder="Сумма (₽)" style="margin-bottom: 0;">
                     <input type="text" id="tx-desc" class="ios-input" placeholder="Категория" style="margin-bottom: 0;">
@@ -264,131 +260,115 @@
             </div>
 
             <div class="card">
-                <div class="card-label">История операций</div>
+                <div class="card-label">История</div>
                 <div id="tx-list"></div>
             </div>
         </div>
 
-        <!-- ЭКРАН 4: АНАЛИТИКА (ГРАФИКИ) -->
+        <!-- ЭКРАН 4: АНАЛИТИКА -->
         <div id="screen-stats" class="app-screen">
             <h2 class="screen-title">Аналитика</h2>
             
             <div class="card">
                 <div class="stat-box">
                     <div class="stat-num" id="stat-saves">0</div>
-                    <div style="font-size: 14px; font-weight: 600; margin-top: 5px;">Дней зафиксировано</div>
+                    <div style="font-size: 14px; font-weight: 600; margin-top: 5px;">Дней в системе</div>
                 </div>
-                <div id="trend-indicator" style="text-align: center; font-size: 14px; color: var(--success-green); font-weight: 600; margin-bottom: 15px;"></div>
-            </div>
-
-            <div class="card">
-                <div class="card-label">Тренды состояния</div>
+                
+                <div class="card-label">Детализация</div>
+                <div class="chart-filters">
+                    <label class="filter-label"><input type="checkbox" checked onchange="toggleChart('energy')"> Энергия</label>
+                    <label class="filter-label"><input type="checkbox" checked onchange="toggleChart('mood')"> Настроение</label>
+                    <label class="filter-label"><input type="checkbox" checked onchange="toggleChart('stress')"> Стресс</label>
+                    <label class="filter-label"><input type="checkbox" checked onchange="toggleChart('water')"> Вода (л)</label>
+                    <label class="filter-label"><input type="checkbox" checked onchange="toggleChart('sleep')"> Сон (ч)</label>
+                </div>
+                
                 <div class="chart-container">
                     <canvas id="stateChart"></canvas>
                 </div>
-                <div class="tip-box">
-                    <span class="tip-icon">💡</span>
-                    <span>График строится по мере фиксации дней (кнопка на экране "Дневник"). Следи, как связаны твои пики стресса со спадами энергии и настроения.</span>
-                </div>
             </div>
+
+            <button class="insta-btn" onclick="shareToInsta()">📸 Поделиться в Stories</button>
         </div>
 
         <!-- ЭКРАН 5: ПРОФИЛЬ -->
         <div id="screen-profile" class="app-screen">
             <h2 class="screen-title">Профиль</h2>
             <div class="card">
-                <div class="card-label">Физиология</div>
+                <div class="card-label">Физиология (Расчет норм)</div>
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <input type="number" id="input-age" class="ios-input" placeholder="Возраст" oninput="updateAppValue('age', this.value)">
-                    <select id="input-gender" class="ios-input" onchange="updateAppValue('gender', this.value)">
+                    <input type="number" id="input-age" class="ios-input" placeholder="Возраст">
+                    <select id="input-gender" class="ios-input">
                         <option value="male">Мужской</option>
                         <option value="female">Женский</option>
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <input type="number" id="input-height" class="ios-input" placeholder="Рост (см)" oninput="updateAppValue('height', this.value)">
-                    <input type="number" id="input-weight" class="ios-input" placeholder="Вес (кг)" oninput="updateAppValue('weight', this.value)">
+                    <input type="number" id="input-height" class="ios-input" placeholder="Рост (см)">
+                    <input type="number" id="input-weight" class="ios-input" placeholder="Вес (кг)">
+                </div>
+                <button class="main-btn" onclick="saveProfile()">Сохранить параметры</button>
+                
+                <div id="profile-results" style="margin-top: 15px; font-size: 14px; font-weight: 600; color: var(--accent-purple); display: none;">
+                    ✅ Нормы воды и питания обновлены!
                 </div>
             </div>
             
-            <button class="main-btn" style="background: var(--alert-red);" onclick="resetData()">Сбросить все данные</button>
+            <button class="secondary-btn" style="color: var(--alert-red); background: rgba(255,59,48,0.1);" onclick="resetData()">Сбросить все данные приложения</button>
         </div>
 
     </div>
 
     <!-- ТАБ БАР -->
     <div class="tab-bar">
-        <div id="tab-main" class="tab-item active" onclick="switchTab('main')">
-            <span class="tab-icon">📝</span><span>Дневник</span>
-        </div>
-        <div id="tab-food" class="tab-item" onclick="switchTab('food')">
-            <span class="tab-icon">🥗</span><span>Питание</span>
-        </div>
-        <div id="tab-finance" class="tab-item" onclick="switchTab('finance')">
-            <span class="tab-icon">💳</span><span>Капитал</span>
-        </div>
-        <div id="tab-stats" class="tab-item" onclick="switchTab('stats')">
-            <span class="tab-icon">📊</span><span>Анализ</span>
-        </div>
-        <div id="tab-profile" class="tab-item" onclick="switchTab('profile')">
-            <span class="tab-icon">👤</span><span>Профиль</span>
-        </div>
+        <div id="tab-main" class="tab-item active" onclick="switchTab('main')"><span class="tab-icon">📝</span><span>Дневник</span></div>
+        <div id="tab-food" class="tab-item" onclick="switchTab('food')"><span class="tab-icon">🥗</span><span>Питание</span></div>
+        <div id="tab-finance" class="tab-item" onclick="switchTab('finance')"><span class="tab-icon">💳</span><span>Капитал</span></div>
+        <div id="tab-stats" class="tab-item" onclick="switchTab('stats')"><span class="tab-icon">📊</span><span>Анализ</span></div>
+        <div id="tab-profile" class="tab-item" onclick="switchTab('profile')"><span class="tab-icon">👤</span><span>Профиль</span></div>
     </div>
+
+    <!-- Canvas для генерации картинки в сторис (скрыт) -->
+    <canvas id="storyCanvas" width="1080" height="1920" style="display:none;"></canvas>
 
     <script>
         const tg = window.Telegram?.WebApp;
         if(tg) { tg.expand(); }
 
         const defaultData = {
-            theme: 'light',
-            sleepTime: '23:00', wakeTime: '07:00',
+            theme: 'light', sleepTime: '23:00', wakeTime: '07:00',
             water: 0, energy: 7, mood: 8, stress: 3,
-            diary: '', kcal: '', protein: '', fat: '', carbs: '', foodList: '',
-            foodPhoto: null,
-            balance: 0,
-            transactions: [],
-            savesCount: 0,
-            history: [], 
-            age: '', gender: 'male', height: '', weight: '',
+            diary: '', kcal: '', protein: '', fat: '', carbs: '', foodList: '', foodPhoto: null,
+            balance: 0, transactions: [], savesCount: 0, history: [], 
+            age: '', gender: 'male', height: '', weight: '', waterNorm: 2000, kcalNorm: 0,
             habits: [
-                { id: Date.now(), text: "Чтение 15 минут", done: false },
-                { id: Date.now()+1, text: "Физическая активность", done: false },
-                { id: Date.now()+2, text: "Планирование дня", done: false }
+                { id: 1, text: "Чтение 15 минут", done: false },
+                { id: 2, text: "Тренировка", done: false }
             ]
         };
 
         let appData = JSON.parse(localStorage.getItem('flow13_data')) || defaultData;
         let chartInstance = null;
+        let activeDatasets = { energy: true, mood: true, stress: true, water: true, sleep: true };
         
-        // Страховка данных
         appData.water = appData.water || 0;
-        appData.balance = Number(appData.balance) || 0;
-        appData.transactions = appData.transactions || [];
         appData.history = appData.history || [];
-        appData.sleepTime = appData.sleepTime || '23:00';
-        appData.wakeTime = appData.wakeTime || '07:00';
 
-        function saveToStore() {
-            localStorage.setItem('flow13_data', JSON.stringify(appData));
-        }
+        function saveToStore() { localStorage.setItem('flow13_data', JSON.stringify(appData)); }
 
-        function updateAppValue(key, value) {
-            appData[key] = value;
-            saveToStore();
-            updateUI();
-        }
+        function updateAppValue(key, value) { appData[key] = value; saveToStore(); updateUI(); }
 
         function initApp() {
             if(appData.theme === 'dark') { document.body.classList.add('dark-theme'); document.getElementById('theme-toggle-btn').innerText = '🌙'; }
-            else { document.body.classList.remove('dark-theme'); document.getElementById('theme-toggle-btn').innerText = '☀️'; }
-
+            
             document.getElementById('input-age').value = appData.age || '';
             document.getElementById('input-gender').value = appData.gender || 'male';
             document.getElementById('input-height').value = appData.height || '';
             document.getElementById('input-weight').value = appData.weight || '';
             
-            document.getElementById('sleep-time').value = appData.sleepTime;
-            document.getElementById('wake-time').value = appData.wakeTime;
+            document.getElementById('sleep-time').value = appData.sleepTime || '23:00';
+            document.getElementById('wake-time').value = appData.wakeTime || '07:00';
             
             document.getElementById('input-diary').value = appData.diary || '';
             document.getElementById('input-kcal').value = appData.kcal || '';
@@ -398,13 +378,21 @@
             document.getElementById('input-food-list').value = appData.foodList || '';
 
             updateUI();
+            updateSleep();
             renderHabits();
             renderTransactions();
-            updateFoodPhotoPreview();
+            if (appData.foodPhoto) {
+                document.getElementById('food-photo-preview').src = appData.foodPhoto;
+                document.getElementById('food-photo-preview').style.display = 'block';
+                document.getElementById('remove-photo-btn').style.display = 'flex';
+            }
         }
 
         function updateUI() {
             document.getElementById('val-water').innerText = appData.water + ' мл';
+            document.getElementById('water-norm-text').innerText = appData.waterNorm ? `Цель: ${appData.waterNorm} мл` : 'Цель: -- мл';
+            document.getElementById('kbju-norm-text').innerText = appData.kcalNorm ? `Норма: ~${appData.kcalNorm} ккал` : 'Норма: не задана';
+            
             document.getElementById('input-energy').value = appData.energy;
             document.getElementById('val-energy').innerText = appData.energy + '/10';
             document.getElementById('input-mood').value = appData.mood;
@@ -415,331 +403,330 @@
             document.getElementById('display-balance').innerText = appData.balance;
         }
 
-        // ====== ФИНАНСЫ ======
+        /* ПРОФИЛЬ: ФИЗИОЛОГИЯ */
+        function saveProfile() {
+            appData.age = parseInt(document.getElementById('input-age').value) || 0;
+            appData.weight = parseInt(document.getElementById('input-weight').value) || 0;
+            appData.height = parseInt(document.getElementById('input-height').value) || 0;
+            appData.gender = document.getElementById('input-gender').value;
+
+            if(appData.weight > 0) {
+                appData.waterNorm = appData.weight * 30; // 30 мл на 1 кг
+            }
+            if(appData.weight && appData.height && appData.age) {
+                // Формула Миффлина-Сан Жеора
+                let bmr = (10 * appData.weight) + (6.25 * appData.height) - (5 * appData.age);
+                bmr += (appData.gender === 'male') ? 5 : -161;
+                appData.kcalNorm = Math.round(bmr * 1.375); // Легкая активность
+            }
+
+            saveToStore();
+            updateUI();
+            
+            const res = document.getElementById('profile-results');
+            res.style.display = 'block';
+            setTimeout(() => res.style.display = 'none', 3000);
+            vibeLight();
+        }
+
+        /* СОН */
+        function calcSleepHours(sTime, wTime) {
+            let [sH, sM] = sTime.split(':').map(Number);
+            let [wH, wM] = wTime.split(':').map(Number);
+            let sMin = sH * 60 + sM;
+            let wMin = wH * 60 + wM;
+            if(wMin < sMin) wMin += 24 * 60;
+            return ((wMin - sMin) / 60).toFixed(1);
+        }
+
+        function updateSleep() {
+            appData.sleepTime = document.getElementById('sleep-time').value;
+            appData.wakeTime = document.getElementById('wake-time').value;
+            let hours = calcSleepHours(appData.sleepTime, appData.wakeTime);
+            document.getElementById('val-sleep-duration').innerText = hours + ' ч.';
+            saveToStore();
+        }
+
+        /* ФИНАНСЫ */
+        function setManualBalance() {
+            const val = parseFloat(document.getElementById('manual-balance').value);
+            if(!isNaN(val)) {
+                appData.balance = val;
+                saveToStore();
+                updateUI();
+                document.getElementById('manual-balance').value = '';
+                vibeLight();
+            }
+        }
+
         function addTransaction(type) {
             const amountInput = document.getElementById('tx-amount');
             const descInput = document.getElementById('tx-desc');
             const amount = parseFloat(amountInput.value);
+            if (isNaN(amount) || amount <= 0) return;
             const desc = descInput.value.trim() || (type === 'income' ? 'Доход' : 'Расход');
 
-            if (isNaN(amount) || amount <= 0) return;
-
             const tx = {
-                id: Date.now(),
-                type: type,
-                amount: amount,
-                desc: desc,
-                date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' })
+                id: Date.now(), type: type, amount: amount, desc: desc,
+                date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour:'2-digit', minute:'2-digit' })
             };
 
             appData.transactions.unshift(tx);
-            if (type === 'income') appData.balance += amount;
-            else appData.balance -= amount;
-
-            saveToStore();
-            renderTransactions();
-            
-            amountInput.value = '';
-            descInput.value = '';
-            vibeLight();
+            if (type === 'income') appData.balance += amount; else appData.balance -= amount;
+            saveToStore(); renderTransactions();
+            amountInput.value = ''; descInput.value = ''; vibeLight();
         }
 
         function renderTransactions() {
             document.getElementById('display-balance').innerText = appData.balance;
             const listEl = document.getElementById('tx-list');
-            listEl.innerHTML = '';
+            listEl.innerHTML = appData.transactions.length ? '' : '<div style="text-align:center; color:var(--text-sub); font-size: 14px; padding: 10px;">Пусто</div>';
             
-            if (appData.transactions.length === 0) {
-                listEl.innerHTML = '<div style="text-align:center; color:var(--text-sub); font-size: 14px; padding: 10px;">Пока нет операций</div>';
-                return;
-            }
-
             appData.transactions.forEach(tx => {
-                const isIncome = tx.type === 'income';
-                const color = isIncome ? 'var(--success-green)' : 'var(--text-main)';
-                const sign = isIncome ? '+' : '-';
-                
-                const el = document.createElement('div');
-                el.className = 'tx-row';
+                const color = tx.type === 'income' ? 'var(--success-green)' : 'var(--text-main)';
+                const sign = tx.type === 'income' ? '+' : '-';
+                const el = document.createElement('div'); el.className = 'tx-row';
                 el.innerHTML = `
-                    <div style="display:flex; flex-direction:column;">
-                        <span style="font-weight:600; font-size:15px;">${tx.desc}</span>
-                        <span style="font-size:12px; color:var(--text-sub);">${tx.date}</span>
-                    </div>
-                    <div style="display:flex; align-items:center;">
-                        <span style="font-weight:700; color:${color}; font-size:16px;">${sign}${tx.amount} ₽</span>
-                        <button class="delete-btn" style="width:24px; height:24px; margin-left:12px; font-size:16px;" onclick="deleteTx(${tx.id})">×</button>
-                    </div>
+                    <div style="display:flex; flex-direction:column;"><span style="font-weight:600; font-size:15px;">${tx.desc}</span><span style="font-size:12px; color:var(--text-sub);">${tx.date}</span></div>
+                    <div style="display:flex; align-items:center;"><span style="font-weight:700; color:${color}; font-size:16px;">${sign}${tx.amount} ₽</span><button class="delete-btn" style="width:24px; height:24px; margin-left:12px; font-size:16px;" onclick="deleteTx(${tx.id})">×</button></div>
                 `;
                 listEl.appendChild(el);
             });
         }
-
         function deleteTx(id) {
-            const txIndex = appData.transactions.findIndex(t => t.id === id);
-            if (txIndex > -1) {
-                const tx = appData.transactions[txIndex];
-                if (tx.type === 'income') appData.balance -= tx.amount;
-                else appData.balance += tx.amount;
-                appData.transactions.splice(txIndex, 1);
-                saveToStore();
-                renderTransactions();
-                vibeLight();
+            const idx = appData.transactions.findIndex(t => t.id === id);
+            if (idx > -1) {
+                const tx = appData.transactions[idx];
+                appData.balance += tx.type === 'income' ? -tx.amount : tx.amount;
+                appData.transactions.splice(idx, 1);
+                saveToStore(); renderTransactions(); vibeLight();
             }
         }
 
-        // ====== ФОТО ПИТАНИЯ ======
+        /* ВОДА И ПРИВЫЧКИ */
+        function addWater(amount) { appData.water = Math.max(0, parseInt(appData.water) + amount); saveToStore(); updateUI(); vibeLight(); }
+        
+        function renderHabits() {
+            const listEl = document.getElementById('habits-list'); listEl.innerHTML = '';
+            appData.habits.forEach((habit) => {
+                const checked = habit.done ? 'checked' : '';
+                const el = document.createElement('div'); el.className = 'habit-row';
+                el.innerHTML = `
+                    <span class="habit-text">${habit.text}</span>
+                    <div class="habit-controls">
+                        <label class="ios-switch"><input type="checkbox" ${checked} onchange="toggleHabit(${habit.id}, this.checked)"><span class="slider-switch"></span></label>
+                        <button class="delete-btn" onclick="deleteHabit(${habit.id})">×</button>
+                    </div>`;
+                listEl.appendChild(el);
+            });
+        }
+        function toggleHabit(id, isChecked) {
+            const h = appData.habits.find(x => x.id === id);
+            if(h) { h.done = isChecked; saveToStore(); } vibeLight();
+        }
+        function addNewHabit() {
+            const text = document.getElementById('new-habit-input').value.trim();
+            if (text) { appData.habits.push({ id: Date.now(), text: text, done: false }); saveToStore(); renderHabits(); document.getElementById('new-habit-input').value=''; vibeLight(); }
+        }
+        function deleteHabit(id) { appData.habits = appData.habits.filter(x => x.id !== id); saveToStore(); renderHabits(); vibeHeavy(); }
+
         function handleFoodPhoto(input) {
             if (input.files && input.files[0]) {
-                const file = input.files[0];
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const img = new Image();
                     img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 600;
-                        const scaleSize = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleSize;
-                        
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        
+                        const canvas = document.createElement('canvas'); const MAX_WIDTH = 600;
+                        const scale = MAX_WIDTH / img.width; canvas.width = MAX_WIDTH; canvas.height = img.height * scale;
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                         appData.foodPhoto = canvas.toDataURL('image/jpeg', 0.7);
-                        saveToStore();
-                        updateFoodPhotoPreview();
+                        saveToStore(); document.getElementById('food-photo-preview').src = appData.foodPhoto;
+                        document.getElementById('food-photo-preview').style.display = 'block';
+                        document.getElementById('remove-photo-btn').style.display = 'flex';
                     }
                     img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
+                }; reader.readAsDataURL(input.files[0]);
             }
         }
+        function removeFoodPhoto() { appData.foodPhoto = null; saveToStore(); document.getElementById('food-photo-preview').style.display = 'none'; document.getElementById('remove-photo-btn').style.display = 'none'; }
 
-        function updateFoodPhotoPreview() {
-            const img = document.getElementById('food-photo-preview');
-            const btn = document.getElementById('remove-photo-btn');
-            if (appData.foodPhoto) {
-                img.src = appData.foodPhoto;
-                img.style.display = 'block';
-                btn.style.display = 'flex';
-            } else {
-                img.style.display = 'none';
-                btn.style.display = 'none';
-            }
-        }
-
-        function removeFoodPhoto() {
-            appData.foodPhoto = null;
-            saveToStore();
-            updateFoodPhotoPreview();
-            vibeLight();
-        }
-
-        // ====== ОСТАЛЬНАЯ ЛОГИКА ======
-        function addWater(amount) {
-            appData.water = Math.max(0, parseInt(appData.water) + amount);
-            saveToStore();
-            updateUI();
-            vibeLight();
-        }
-
-        function renderHabits() {
-            const listEl = document.getElementById('habits-list');
-            listEl.innerHTML = '';
-            if (!appData.habits) appData.habits = [];
-            appData.habits.forEach((habit) => {
-                const checked = habit.done ? 'checked' : '';
-                const newRow = document.createElement('div');
-                newRow.className = 'habit-row';
-                newRow.innerHTML = `
-                    <span class="habit-text">${habit.text}</span>
-                    <div class="habit-controls">
-                        <label class="ios-switch">
-                            <input type="checkbox" ${checked} onchange="toggleHabit(${habit.id}, this.checked)">
-                            <span class="slider-switch"></span>
-                        </label>
-                        <button class="delete-btn" onclick="deleteHabit(${habit.id})">×</button>
-                    </div>
-                `;
-                listEl.appendChild(newRow);
-            });
-        }
-
-        function toggleHabit(id, isChecked) {
-            const habit = appData.habits.find(h => h.id === id);
-            if(habit) { habit.done = isChecked; saveToStore(); }
-            vibeLight();
-        }
-
-        function addNewHabit() {
-            const inputEl = document.getElementById('new-habit-input');
-            const text = inputEl.value.trim();
-            if (!text) return;
-            appData.habits.push({ id: Date.now(), text: text, done: false });
-            saveToStore();
-            renderHabits();
-            inputEl.value = '';
-            vibeLight();
-        }
-
-        function deleteHabit(id) {
-            appData.habits = appData.habits.filter(h => h.id !== id);
-            saveToStore();
-            renderHabits();
-            vibeHeavy();
-        }
-
+        /* ФИКСАЦИЯ ДНЯ И СОВЕТЫ */
         function saveDay() {
             const today = new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+            let sleepH = calcSleepHours(appData.sleepTime, appData.wakeTime);
             
             appData.history.push({
-                date: today,
-                energy: appData.energy,
-                mood: appData.mood,
-                stress: appData.stress
+                date: today, energy: appData.energy, mood: appData.mood, stress: appData.stress,
+                water: (appData.water / 1000).toFixed(1), sleep: sleepH
             });
+            if(appData.history.length > 14) appData.history.shift(); // Храним до 14 дней на графике
 
-            if(appData.history.length > 7) {
-                appData.history.shift();
-            }
+            const insights = document.getElementById('day-insights'); insights.innerHTML = '';
+            
+            // Анализ сна
+            let sleepTip = '';
+            if(sleepH < 7) sleepTip = `⏰ Сон: ${sleepH} ч. — это мало, бро. Организм не успевает восстановить ЦНС. Старайся лечь пораньше.`;
+            else if(sleepH > 9) sleepTip = `⏰ Сон: ${sleepH} ч. — перебор, от этого бывает вялость. 7-8 часов — идеальная база.`;
+            else sleepTip = `⏰ Сон: ${sleepH} ч. — золотая середина! Режим работает на тебя.`;
 
-            // Генерируем умные советы
-            const insightsContainer = document.getElementById('day-insights');
-            insightsContainer.innerHTML = '';
-            
-            let sleepTip = `⏰ Сон: Установлен отбой в ${appData.sleepTime}. Постарайся лечь вовремя, чтобы нервная система успела восстановиться.`;
-            
+            // Анализ воды
             let waterTip = '';
-            if (appData.water < 1500) waterTip = '💧 Вода: Ты выпил маловато воды. Завтра держи бутылку под рукой, это напрямую влияет на твой фокус.';
-            else waterTip = '💧 Вода: Отличная гидратация! Твой организм работает без перебоев.';
+            if(appData.waterNorm && appData.water < appData.waterNorm) {
+                waterTip = `💧 Вода: Недопил до нормы (${appData.water} из ${appData.waterNorm} мл). Это бьет по фокусу и густоте крови.`;
+            } else {
+                waterTip = `💧 Вода: Норма выполнена! Гидратация на уровне.`;
+            }
 
-            let stateTip = '';
-            if (appData.stress >= 6) stateTip = '🌪 Состояние: Уровень стресса высок. Найди 15 минут на полную отключку от смартфона перед сном.';
-            else if (appData.energy <= 4) stateTip = '⚡️ Состояние: Энергия на нуле. Обязательно запланируй качественный отдых на вечер.';
-            else stateTip = '😊 Состояние: Отличный баланс! Ты в ресурсе, сохраняй этот вайб на завтра.';
+            // Анализ состояния
+            let stateTip = appData.stress >= 6 ? '🌪 Состояние: Высокий стресс. Выдели 15 минут вечером на тишину без экрана.' : '😊 Состояние: Ресурс в норме. Красавчик.';
 
-            const tips = [sleepTip, waterTip, stateTip];
-            tips.forEach(tip => {
-                const tipEl = document.createElement('div');
-                tipEl.className = 'tip-box';
-                tipEl.style.marginTop = '0';
-                tipEl.innerHTML = `<span class="tip-icon">💡</span><span>${tip}</span>`;
-                insightsContainer.appendChild(tipEl);
+            [sleepTip, waterTip, stateTip].forEach(tip => {
+                const el = document.createElement('div'); el.className = 'tip-box'; el.style.marginTop = '0';
+                el.innerHTML = `<span class="tip-icon">💡</span><span>${tip}</span>`; insights.appendChild(el);
             });
 
-            insightsContainer.style.display = 'flex';
-
+            insights.style.display = 'flex';
             appData.savesCount += 1;
-            saveToStore();
-            updateUI();
-            vibeHeavy();
-
-            // Визуальный фидбек на кнопке
-            const btn = document.getElementById('save-day-btn');
-            const originalText = btn.innerText;
-            btn.innerText = '✅ День зафиксирован!';
-            btn.style.background = 'var(--success-green)';
             
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.background = 'var(--accent-purple)';
-            }, 3000);
+            // Сбрасываем галочки привычек на следующий день
+            appData.habits.forEach(h => h.done = false);
+
+            saveToStore(); updateUI(); renderHabits(); vibeHeavy();
+
+            const btn = document.getElementById('save-day-btn');
+            const orig = btn.innerText; btn.innerText = '✅ День сохранен!'; btn.style.background = 'var(--success-green)';
+            setTimeout(() => { btn.innerText = orig; btn.style.background = 'var(--accent-purple)'; }, 3000);
         }
 
-        function toggleTheme() {
-            appData.theme = appData.theme === 'light' ? 'dark' : 'light';
-            saveToStore();
-            initApp();
-            if(chartInstance) renderChart(); 
-            vibeLight();
+        /* ГРАФИКИ С ГАЛОЧКАМИ */
+        function toggleChart(metric) {
+            activeDatasets[metric] = !activeDatasets[metric];
+            renderChart();
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.app-screen, .tab-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('screen-' + tabId).classList.add('active');
-            document.getElementById('tab-' + tabId).classList.add('active');
-            vibeLight();
-            if(tabId === 'stats') { 
-                calculateWeeklyTrends(); 
-                renderChart();
-            }
-        }
-
-        function calculateWeeklyTrends() {
-            const trendEl = document.getElementById('trend-indicator');
-            if (appData.savesCount === 0) {
-                trendEl.innerText = "⏳ Начни фиксировать дни, чтобы увидеть статистику.";
-                trendEl.style.color = "var(--text-sub)";
-            } else if (appData.savesCount >= 5) {
-                trendEl.innerText = "🔥 Отличная дисциплина: высокая стабильность!";
-                trendEl.style.color = "var(--success-green)";
-            } else {
-                trendEl.innerText = "📈 Статистика формируется. Заполняй данные ежедневно.";
-                trendEl.style.color = "var(--accent-purple)";
-            }
-        }
-
-        // ====== ГРАФИКИ (Chart.js) ======
         function renderChart() {
             const ctx = document.getElementById('stateChart').getContext('2d');
             const isDark = document.body.classList.contains('dark-theme');
             const textColor = isDark ? '#98989d' : '#8e8e93';
             const gridColor = isDark ? '#38383a' : '#e5e5ea';
 
-            const labels = appData.history.map(h => h.date);
-            const energyData = appData.history.map(h => h.energy);
-            const moodData = appData.history.map(h => h.mood);
-            const stressData = appData.history.map(h => h.stress);
+            const labels = appData.history.length ? appData.history.map(h => h.date) : ['Нет данных'];
+            
+            // Градиенты
+            const getGradient = (colorStr) => {
+                let grad = ctx.createLinearGradient(0, 0, 0, 250);
+                grad.addColorStop(0, colorStr.replace(')', ', 0.3)').replace('rgb', 'rgba'));
+                grad.addColorStop(1, colorStr.replace(')', ', 0)').replace('rgb', 'rgba'));
+                return grad;
+            };
 
-            if (chartInstance) { chartInstance.destroy(); }
+            const datasets = [];
+            
+            if(activeDatasets.energy) datasets.push({ label: 'Энергия', data: appData.history.map(h => h.energy), borderColor: '#34c759', backgroundColor: getGradient('rgb(52,199,89)'), fill: true, tension: 0.4, borderWidth: 3 });
+            if(activeDatasets.mood) datasets.push({ label: 'Настроение', data: appData.history.map(h => h.mood), borderColor: '#bf5af2', backgroundColor: getGradient('rgb(191,90,242)'), fill: true, tension: 0.4, borderWidth: 3 });
+            if(activeDatasets.stress) datasets.push({ label: 'Стресс', data: appData.history.map(h => h.stress), borderColor: '#ff3b30', backgroundColor: getGradient('rgb(255,59,48)'), fill: true, tension: 0.4, borderWidth: 3 });
+            if(activeDatasets.water) datasets.push({ label: 'Вода (л)', data: appData.history.map(h => h.water || 0), borderColor: '#32ade6', backgroundColor: getGradient('rgb(50,173,230)'), fill: true, tension: 0.4, borderWidth: 3 });
+            if(activeDatasets.sleep) datasets.push({ label: 'Сон (ч)', data: appData.history.map(h => h.sleep || 0), borderColor: '#5e5ce6', backgroundColor: getGradient('rgb(94,92,230)'), fill: true, tension: 0.4, borderWidth: 3 });
+
+            if (chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: labels.length ? labels : ['Нет данных'],
-                    datasets: [
-                        { label: 'Энергия', data: energyData.length ? energyData : [0], borderColor: '#34c759', tension: 0.4, borderWidth: 3 },
-                        { label: 'Настроение', data: moodData.length ? moodData : [0], borderColor: '#bf5af2', tension: 0.4, borderWidth: 3 },
-                        { label: 'Стресс', data: stressData.length ? stressData : [0], borderColor: '#ff3b30', tension: 0.4, borderWidth: 3 }
-                    ]
-                },
+                data: { labels: labels, datasets: datasets },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { min: 0, max: 10, ticks: { color: textColor }, grid: { color: gridColor } },
-                        x: { ticks: { color: textColor }, grid: { color: gridColor } }
-                    },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: textColor, font: { family: '-apple-system, sans-serif', size: 12 } } }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { color: gridColor } } },
+                    plugins: { legend: { display: false } }, // Легенду мы сделали кастомными чекбоксами
+                    interaction: { mode: 'index', intersect: false }
                 }
             });
         }
 
-        function scheduleNotification() {
-            const time = appData.sleepTime;
-            if(tg && tg.sendData) { tg.sendData(JSON.stringify({ action: 'set_reminder', time: time })); } 
-            else { alert('Напоминание на ' + time + ' установлено'); }
-            vibeLight();
+        /* INSTAGRAM STORIES (Генерация картинки) */
+        function shareToInsta() {
+            const canvas = document.getElementById('storyCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Рисуем красивый фон
+            const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
+            grad.addColorStop(0, '#1c1c1e');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 1080, 1920);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 80px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('МОЙ ДЕНЬ | FLOW-13', 540, 300);
+
+            // Рисуем показатели
+            ctx.font = '60px sans-serif';
+            ctx.textAlign = 'left';
+            const startX = 150;
+            let currentY = 600;
+            const gap = 150;
+
+            let sleepH = calcSleepHours(appData.sleepTime, appData.wakeTime);
+            
+            const stats = [
+                { icon: '⚡️', text: `Энергия: ${appData.energy}/10`, color: '#34c759' },
+                { icon: '😊', text: `Настроение: ${appData.mood}/10`, color: '#bf5af2' },
+                { icon: '🌪', text: `Стресс: ${appData.stress}/10`, color: '#ff3b30' },
+                { icon: '💧', text: `Вода: ${appData.water} мл`, color: '#32ade6' },
+                { icon: '⏰', text: `Сон: ${sleepH} ч.`, color: '#5e5ce6' }
+            ];
+
+            stats.forEach(s => {
+                ctx.fillStyle = s.color;
+                ctx.fillText(s.icon + ' ' + s.text, startX, currentY);
+                currentY += gap;
+            });
+
+            ctx.fillStyle = '#8e8e93';
+            ctx.font = '40px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Сгенерировано в приложении Life Diary', 540, 1800);
+
+            // Конвертируем в картинку
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            
+            // Если есть Web Share API (работает на мобилках)
+            if (navigator.share) {
+                fetch(dataUrl).then(res => res.blob()).then(blob => {
+                    const file = new File([blob], 'story.jpg', { type: 'image/jpeg' });
+                    navigator.share({
+                        title: 'Мой день',
+                        files: [file]
+                    }).catch(console.error);
+                });
+            } else {
+                // Если с ПК — просто скачиваем
+                const link = document.createElement('a');
+                link.download = 'story.jpg';
+                link.href = dataUrl;
+                link.click();
+            }
+            vibeHeavy();
         }
 
+        function toggleTheme() {
+            appData.theme = appData.theme === 'light' ? 'dark' : 'light';
+            saveToStore(); initApp(); if(chartInstance) renderChart(); vibeLight();
+        }
+        function switchTab(tabId) {
+            document.querySelectorAll('.app-screen, .tab-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('screen-' + tabId).classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+            vibeLight();
+            if(tabId === 'stats') { renderChart(); }
+        }
         function resetData() {
             if(confirm('Точно удалить все данные? Графики и баланс тоже обнулятся.')) {
-                localStorage.removeItem('flow13_data');
-                appData = defaultData;
-                location.reload();
+                localStorage.removeItem('flow13_data'); location.reload();
             }
         }
-
-        function vibeLight() {
-            if (tg && tg.HapticFeedback) { tg.HapticFeedback.impactOccurred('light'); }
-            else if (navigator.vibrate) { navigator.vibrate(15); }
-        }
-        function vibeHeavy() {
-            if (tg && tg.HapticFeedback) { tg.HapticFeedback.impactOccurred('heavy'); }
-            else if (navigator.vibrate) { navigator.vibrate([30, 40, 30]); }
-        }
+        function vibeLight() { if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); }
+        function vibeHeavy() { if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy'); }
 
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
