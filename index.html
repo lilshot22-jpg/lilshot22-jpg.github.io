@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FLOW-13 // LIFE DIARY V10</title>
+    <title>FLOW-13 // LIFE DIARY V12</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -76,7 +77,7 @@
         select.ios-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>"); background-repeat: no-repeat; background-position-x: 95%; background-position-y: 50%; }
 
         /* Кнопки */
-        .main-btn { background: var(--accent-purple); color: #ffffff; border: none; border-radius: 16px; padding: 14px; width: 100%; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; }
+        .main-btn { background: var(--accent-purple); color: #ffffff; border: none; border-radius: 16px; padding: 14px; width: 100%; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; transition: background-color 0.3s; }
         .main-btn:active { transform: scale(0.98); }
         .secondary-btn { background: var(--accent-purple-light); color: var(--accent-purple); border: none; border-radius: 12px; padding: 10px; width: 100%; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         
@@ -99,6 +100,7 @@
         /* Аналитика */
         .stat-box { background: var(--accent-purple-light); padding: 20px; border-radius: 16px; text-align: center; margin-bottom: 16px; }
         .stat-num { font-size: 40px; font-weight: 800; color: var(--accent-purple); }
+        .chart-container { position: relative; height: 200px; width: 100%; margin-top: 15px; }
 
         /* Таббар */
         .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); height: 75px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border-color); padding-bottom: 12px; z-index: 100; }
@@ -128,6 +130,7 @@
 
     <div class="container">
 
+        <!-- ЭКРАН 1: ГЛАВНЫЙ -->
         <div id="screen-main" class="app-screen active">
             
             <div class="card">
@@ -143,10 +146,6 @@
                     </div>
                 </div>
                 <button class="secondary-btn" onclick="scheduleNotification()">Включить автооповещение</button>
-                <div class="tip-box">
-                    <span class="tip-icon">💡</span>
-                    <span>Стабильный режим сна — основа продуктивности. Засыпая и просыпаясь в одно и то же время, ты помогаешь организму регулировать циркадные ритмы.</span>
-                </div>
             </div>
 
             <div class="card">
@@ -170,8 +169,8 @@
             </div>
 
             <div class="card">
-                <div class="card-label">🧠 Задача дня</div>
-                <textarea id="input-diary" class="ios-input" placeholder="Главная задача на день. Что нужно обязательно сделать?" oninput="updateAppValue('diary', this.value)"></textarea>
+                <div class="card-label">🧠 Главный фокус (Задача дня)</div>
+                <textarea id="input-diary" class="ios-input" placeholder="Опиши одну главную задачу. Сделай её — и день уже прошел не зря." oninput="updateAppValue('diary', this.value)"></textarea>
             </div>
 
             <div class="card">
@@ -183,9 +182,13 @@
                 </div>
             </div>
             
-            <button class="main-btn" onclick="saveDay()">Зафиксировать день</button>
+            <!-- Динамический блок советов, который появляется после сохранения -->
+            <div id="day-insights" style="display: none; flex-direction: column; gap: 10px; margin-bottom: 16px;"></div>
+
+            <button id="save-day-btn" class="main-btn" onclick="saveDay()">Зафиксировать день</button>
         </div>
 
+        <!-- ЭКРАН 2: ПИТАНИЕ (ТРЕКИНГ + ФОТО) -->
         <div id="screen-food" class="app-screen">
             <h2 class="screen-title">Питание</h2>
             
@@ -198,6 +201,10 @@
                 <div class="photo-container">
                     <img id="food-photo-preview" style="width: 100%; border-radius: 12px; margin-top: 10px; display: none; object-fit: cover;" />
                     <button id="remove-photo-btn" class="remove-photo-btn" onclick="removeFoodPhoto()">×</button>
+                </div>
+                <div class="tip-box">
+                    <span class="tip-icon">💡</span>
+                    <span>Визуальный дневник помогает лучше контролировать объемы порций и не срываться на "случайные" перекусы.</span>
                 </div>
             </div>
 
@@ -224,15 +231,24 @@
 
                 <div class="card-label">Рацион</div>
                 <textarea id="input-food-list" class="ios-input" placeholder="Что было съедено за день? Запиши приемы пищи." oninput="updateAppValue('foodList', this.value)"></textarea>
+                <div class="tip-box">
+                    <span class="tip-icon">💡</span>
+                    <span>Белки — стройматериал мышц, жиры — топливо для гормонов, сложные углеводы — долгая энергия. Держи баланс.</span>
+                </div>
             </div>
         </div>
 
+        <!-- ЭКРАН 3: ФИНАНСЫ (ПОЛНОЦЕННЫЙ ТРЕКЕР) -->
         <div id="screen-finance" class="app-screen">
             <h2 class="screen-title">Капитал</h2>
             
             <div class="card balance-card">
                 <div style="color: var(--text-sub); font-size: 14px; font-weight: 600;">ТЕКУЩИЙ БАЛАНС (₽)</div>
                 <div id="display-balance" style="font-size: 38px; font-weight: 800; margin: 10px 0; color: var(--text-main);">0</div>
+                <div class="tip-box" style="text-align: left;">
+                    <span class="tip-icon">💡</span>
+                    <span>Фиксируй даже мелкие расходы. Понимание того, куда уходят деньги, — первый шаг к финансовой безопасности и спокойствию.</span>
+                </div>
             </div>
 
             <div class="card">
@@ -253,8 +269,10 @@
             </div>
         </div>
 
+        <!-- ЭКРАН 4: АНАЛИТИКА (ГРАФИКИ) -->
         <div id="screen-stats" class="app-screen">
             <h2 class="screen-title">Аналитика</h2>
+            
             <div class="card">
                 <div class="stat-box">
                     <div class="stat-num" id="stat-saves">0</div>
@@ -262,8 +280,20 @@
                 </div>
                 <div id="trend-indicator" style="text-align: center; font-size: 14px; color: var(--success-green); font-weight: 600; margin-bottom: 15px;"></div>
             </div>
+
+            <div class="card">
+                <div class="card-label">Тренды состояния</div>
+                <div class="chart-container">
+                    <canvas id="stateChart"></canvas>
+                </div>
+                <div class="tip-box">
+                    <span class="tip-icon">💡</span>
+                    <span>График строится по мере фиксации дней (кнопка на экране "Дневник"). Следи, как связаны твои пики стресса со спадами энергии и настроения.</span>
+                </div>
+            </div>
         </div>
 
+        <!-- ЭКРАН 5: ПРОФИЛЬ -->
         <div id="screen-profile" class="app-screen">
             <h2 class="screen-title">Профиль</h2>
             <div class="card">
@@ -286,6 +316,7 @@
 
     </div>
 
+    <!-- ТАБ БАР -->
     <div class="tab-bar">
         <div id="tab-main" class="tab-item active" onclick="switchTab('main')">
             <span class="tab-icon">📝</span><span>Дневник</span>
@@ -317,6 +348,7 @@
             balance: 0,
             transactions: [],
             savesCount: 0,
+            history: [], 
             age: '', gender: 'male', height: '', weight: '',
             habits: [
                 { id: Date.now(), text: "Чтение 15 минут", done: false },
@@ -326,11 +358,13 @@
         };
 
         let appData = JSON.parse(localStorage.getItem('flow13_data')) || defaultData;
+        let chartInstance = null;
         
         // Страховка данных
         appData.water = appData.water || 0;
         appData.balance = Number(appData.balance) || 0;
         appData.transactions = appData.transactions || [];
+        appData.history = appData.history || [];
         appData.sleepTime = appData.sleepTime || '23:00';
         appData.wakeTime = appData.wakeTime || '07:00';
 
@@ -460,11 +494,10 @@
                 const file = input.files[0];
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Сжатие изображения через Canvas, чтобы не забить localStorage
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 600; // Оптимально для телефона
+                        const MAX_WIDTH = 600;
                         const scaleSize = MAX_WIDTH / img.width;
                         canvas.width = MAX_WIDTH;
                         canvas.height = img.height * scaleSize;
@@ -557,17 +590,67 @@
         }
 
         function saveDay() {
+            const today = new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+            
+            appData.history.push({
+                date: today,
+                energy: appData.energy,
+                mood: appData.mood,
+                stress: appData.stress
+            });
+
+            if(appData.history.length > 7) {
+                appData.history.shift();
+            }
+
+            // Генерируем умные советы
+            const insightsContainer = document.getElementById('day-insights');
+            insightsContainer.innerHTML = '';
+            
+            let sleepTip = `⏰ Сон: Установлен отбой в ${appData.sleepTime}. Постарайся лечь вовремя, чтобы нервная система успела восстановиться.`;
+            
+            let waterTip = '';
+            if (appData.water < 1500) waterTip = '💧 Вода: Ты выпил маловато воды. Завтра держи бутылку под рукой, это напрямую влияет на твой фокус.';
+            else waterTip = '💧 Вода: Отличная гидратация! Твой организм работает без перебоев.';
+
+            let stateTip = '';
+            if (appData.stress >= 6) stateTip = '🌪 Состояние: Уровень стресса высок. Найди 15 минут на полную отключку от смартфона перед сном.';
+            else if (appData.energy <= 4) stateTip = '⚡️ Состояние: Энергия на нуле. Обязательно запланируй качественный отдых на вечер.';
+            else stateTip = '😊 Состояние: Отличный баланс! Ты в ресурсе, сохраняй этот вайб на завтра.';
+
+            const tips = [sleepTip, waterTip, stateTip];
+            tips.forEach(tip => {
+                const tipEl = document.createElement('div');
+                tipEl.className = 'tip-box';
+                tipEl.style.marginTop = '0';
+                tipEl.innerHTML = `<span class="tip-icon">💡</span><span>${tip}</span>`;
+                insightsContainer.appendChild(tipEl);
+            });
+
+            insightsContainer.style.display = 'flex';
+
             appData.savesCount += 1;
             saveToStore();
             updateUI();
             vibeHeavy();
-            switchTab('stats');
+
+            // Визуальный фидбек на кнопке
+            const btn = document.getElementById('save-day-btn');
+            const originalText = btn.innerText;
+            btn.innerText = '✅ День зафиксирован!';
+            btn.style.background = 'var(--success-green)';
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = 'var(--accent-purple)';
+            }, 3000);
         }
 
         function toggleTheme() {
             appData.theme = appData.theme === 'light' ? 'dark' : 'light';
             saveToStore();
             initApp();
+            if(chartInstance) renderChart(); 
             vibeLight();
         }
 
@@ -576,7 +659,10 @@
             document.getElementById('screen-' + tabId).classList.add('active');
             document.getElementById('tab-' + tabId).classList.add('active');
             vibeLight();
-            if(tabId === 'stats') { calculateWeeklyTrends(); }
+            if(tabId === 'stats') { 
+                calculateWeeklyTrends(); 
+                renderChart();
+            }
         }
 
         function calculateWeeklyTrends() {
@@ -588,9 +674,47 @@
                 trendEl.innerText = "🔥 Отличная дисциплина: высокая стабильность!";
                 trendEl.style.color = "var(--success-green)";
             } else {
-                trendEl.innerText = "📈 Статистика формируется. Старайся заполнять данные ежедневно.";
+                trendEl.innerText = "📈 Статистика формируется. Заполняй данные ежедневно.";
                 trendEl.style.color = "var(--accent-purple)";
             }
+        }
+
+        // ====== ГРАФИКИ (Chart.js) ======
+        function renderChart() {
+            const ctx = document.getElementById('stateChart').getContext('2d');
+            const isDark = document.body.classList.contains('dark-theme');
+            const textColor = isDark ? '#98989d' : '#8e8e93';
+            const gridColor = isDark ? '#38383a' : '#e5e5ea';
+
+            const labels = appData.history.map(h => h.date);
+            const energyData = appData.history.map(h => h.energy);
+            const moodData = appData.history.map(h => h.mood);
+            const stressData = appData.history.map(h => h.stress);
+
+            if (chartInstance) { chartInstance.destroy(); }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.length ? labels : ['Нет данных'],
+                    datasets: [
+                        { label: 'Энергия', data: energyData.length ? energyData : [0], borderColor: '#34c759', tension: 0.4, borderWidth: 3 },
+                        { label: 'Настроение', data: moodData.length ? moodData : [0], borderColor: '#bf5af2', tension: 0.4, borderWidth: 3 },
+                        { label: 'Стресс', data: stressData.length ? stressData : [0], borderColor: '#ff3b30', tension: 0.4, borderWidth: 3 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 0, max: 10, ticks: { color: textColor }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor }, grid: { color: gridColor } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: textColor, font: { family: '-apple-system, sans-serif', size: 12 } } }
+                    }
+                }
+            });
         }
 
         function scheduleNotification() {
@@ -601,7 +725,7 @@
         }
 
         function resetData() {
-            if(confirm('Точно удалить все данные? Баланс и история операций тоже исчезнут.')) {
+            if(confirm('Точно удалить все данные? Графики и баланс тоже обнулятся.')) {
                 localStorage.removeItem('flow13_data');
                 appData = defaultData;
                 location.reload();
