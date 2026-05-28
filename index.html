@@ -16,7 +16,6 @@
             --accent-purple-light: rgba(142, 68, 173, 0.1);
             --alert-red: #ff3b30;
             --success-green: #34c759;
-            --water-blue: #32ade6;
             --border-color: #e5e5ea;
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
@@ -77,6 +76,14 @@
 
         .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
         
+        /* Сетка времени - Выравнивание по центру */
+        .time-grid { display: flex; justify-content: center; align-items: center; gap: 24px; text-align: center; width: 100%; margin: 8px 0; }
+        .time-block { display: flex; flex-direction: column; align-items: center; }
+
+        /* Фотофиксация еды */
+        .photo-upload-label { width: 100%; background: var(--accent-purple-light); color: var(--accent-purple); border: 2px dashed var(--accent-purple); padding: 14px; border-radius: 16px; font-weight: 700; text-align: center; cursor: pointer; display: block; }
+        .photo-preview-box { width: 100%; max-height: 220px; border-radius: 16px; overflow: hidden; display: none; justify-content: center; align-items: center; margin-top: 12px; border: 1px solid var(--border-color); }
+
         /* Секция статистики внизу */
         .bottom-stats-title { font-size: 15px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 12px 0; }
         .bottom-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -99,7 +106,6 @@
 
         .app-screen { display: none; }
         .app-screen.active { display: block; }
-        .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     </style>
 </head>
 <body>
@@ -119,17 +125,19 @@
             <h2 class="screen-title">Дневник <span class="screen-date" id="main-screen-date">--.--</span></h2>
             
             <div class="card">
-                <div class="card-label"><span>⏰ Режим сна</span> <span class="unit-display" id="val-sleep-duration">0 ч.</span></div>
+                <div class="card-label" style="justify-content: center; margin-bottom: 14px;"><span>⏰ Режим сна</span></div>
                 <div class="time-grid">
-                    <div>
-                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight:600;">Отбой</div>
-                        <input type="time" id="sleep-time" class="ios-input" onchange="updateSleepData()">
+                    <div class="time-block">
+                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 6px; font-weight:600;">Отбой</div>
+                        <input type="time" id="sleep-time" class="ios-input" style="text-align:center; max-width:115px; margin-bottom:0;" onchange="updateSleepData()">
                     </div>
-                    <div>
-                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight:600;">Подъем</div>
-                        <input type="time" id="wake-time" class="ios-input" onchange="updateSleepData()">
+                    <div style="font-size: 20px; color: var(--text-sub); align-self: flex-end; margin-bottom: 6px;">➔</div>
+                    <div class="time-block">
+                        <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 6px; font-weight:600;">Подъем</div>
+                        <input type="time" id="wake-time" class="ios-input" style="text-align:center; max-width:115px; margin-bottom:0;" onchange="updateSleepData()">
                     </div>
                 </div>
+                <div style="text-align: center; margin-top: 12px; font-size: 14px; font-weight: 800; color: var(--accent-purple);" id="val-sleep-duration">0 ч.</div>
             </div>
 
             <div class="card">
@@ -206,9 +214,18 @@
                     </div>
                 </div>
                 
-                <div class="card-label" style="margin-top:15px;">Состав рациона</div>
+                <div class="card-label" style="margin-top:10px;">Состав рациона</div>
                 <input type="text" id="input-food-list" class="ios-input" placeholder="Что ты съел сегодня?" oninput="storeTodayMetric('foodList', this.value)">
-                <button class="insta-btn" onclick="shareFoodToStories()">📸 Поделиться рационом в Stories</button>
+                
+                <div class="card-label" style="margin-top:10px;">📸 Фотофиксация блюда</div>
+                <label for="food-photo-upload" class="photo-upload-label">📷 Сделать снимок / Выбрать фото</label>
+                <input type="file" id="food-photo-upload" accept="image/*" style="display:none;" onchange="processFoodPhoto(this)">
+                
+                <div id="food-photo-preview" class="photo-preview-box">
+                    <img id="food-img-tag" src="" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+
+                <button class="insta-btn" style="margin-top:16px;" onclick="shareFoodToStories()">📸 Поделиться рационом в Stories</button>
             </div>
 
             <div class="bottom-stats-title">Мониторинг Калорийности</div>
@@ -369,18 +386,12 @@
                 db.history[today] = {
                     sleepTime: '23:00', wakeTime: '07:00', sleepHours: 8,
                     water: 0, energy: 7, mood: 8, stress: 3,
-                    diary: '', kcal: '', protein: '', fat: '', carbs: '', foodList: '', saved: false
+                    diary: '', kcal: '', protein: '', fat: '', carbs: '', foodList: '', foodPhoto: '', saved: false
                 };
                 
-                // Сброс ежедневных отметок привычек при наступлении нового дня
                 db.habits.forEach(h => {
-                    if (h.lastDoneDate !== today) {
-                        h.done = false;
-                    }
-                    // Если пропустили вчерашний день, стрик сгорает
-                    if (h.lastDoneDate !== today && h.lastDoneDate !== getYesterdayKey()) {
-                        h.streak = 0;
-                    }
+                    if (h.lastDoneDate !== today) { h.done = false; }
+                    if (h.lastDoneDate !== today && h.lastDoneDate !== getYesterdayKey()) { h.streak = 0; }
                 });
                 saveDb();
             }
@@ -390,13 +401,11 @@
             initTodayDataSlot();
             if(db.theme === 'dark') { document.body.classList.add('dark-theme'); }
             
-            // Заполнение профиля
             document.getElementById('prof-age').value = db.profile.age || '';
             document.getElementById('prof-gender').value = db.profile.gender || 'male';
             document.getElementById('prof-height').value = db.profile.height || '';
             document.getElementById('prof-weight').value = db.profile.weight || '';
 
-            // Заполнение полей текущего дня
             const todayData = db.history[getTodayKey()];
             document.getElementById('sleep-time').value = todayData.sleepTime;
             document.getElementById('wake-time').value = todayData.wakeTime;
@@ -406,6 +415,9 @@
             document.getElementById('input-fat').value = todayData.fat;
             document.getElementById('input-carbs').value = todayData.carbs;
             document.getElementById('input-food-list').value = todayData.foodList;
+
+            // Отрисовка превью фото, если оно есть
+            togglePhotoPreview(todayData.foodPhoto || '');
 
             const dateParts = getTodayKey().split('-');
             document.getElementById('main-screen-date').innerText = `${dateParts[2]}.${dateParts[1]}`;
@@ -425,7 +437,6 @@
         function refreshUserInterface() {
             const todayData = db.history[getTodayKey()];
             
-            // Синхронизация значений ползунков
             document.getElementById('input-energy').value = todayData.energy;
             document.getElementById('val-energy').innerText = todayData.energy + '/10';
             document.getElementById('input-mood').value = todayData.mood;
@@ -437,13 +448,11 @@
             document.getElementById('val-sleep-duration').innerText = todayData.sleepHours + ' ч.';
             document.getElementById('display-balance').innerText = db.balance.toLocaleString('ru-RU') + ' ₽';
 
-            // Нижняя сводка - Главная
             const doneHabitsCount = db.habits.filter(h => h.done).length;
             document.getElementById('bottom-main-habits').innerText = `${doneHabitsCount}/${db.habits.length}`;
             const waterPercent = Math.min(100, Math.round((todayData.water / (db.profile.waterNorm || 2000)) * 100));
             document.getElementById('bottom-main-water').innerText = `${waterPercent}%`;
 
-            // Нижняя сводка - Питание
             document.getElementById('food-stat-current-kcal').innerText = todayData.kcal || 0;
             document.getElementById('food-stat-norm-kcal').innerText = `Цель: ${db.profile.kcalNorm || '--'} ккал`;
             document.getElementById('food-stat-current-p').innerText = todayData.protein || 0;
@@ -453,13 +462,11 @@
             const kcalPercent = Math.min(100, Math.round(((todayData.kcal || 0) / (db.profile.kcalNorm || 2500)) * 100));
             document.getElementById('food-kcal-progress').style.width = `${kcalPercent}%`;
 
-            // Нижняя сводка - Капитал
             let totalInc = db.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
             let totalExp = db.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
             document.getElementById('bottom-fin-income').innerText = totalInc.toLocaleString('ru-RU') + ' ₽';
             document.getElementById('bottom-fin-expense').innerText = totalExp.toLocaleString('ru-RU') + ' ₽';
 
-            // Счетчик зафиксированных дней
             let totalSavedDays = Object.values(db.history).filter(day => day.saved).length;
             document.getElementById('stat-total-days').innerText = totalSavedDays;
         }
@@ -494,7 +501,31 @@
             triggerHaptic('light');
         }
 
-        /* ПРИВЫЧКИ С СТРИКАМИ */
+        /* ФОТОФИКСАЦИЯ ЕДЫ */
+        function processFoodPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Data = e.target.result;
+                    storeTodayMetric('foodPhoto', base64Data);
+                    togglePhotoPreview(base64Data);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function togglePhotoPreview(src) {
+            const box = document.getElementById('food-photo-preview');
+            const img = document.getElementById('food-img-tag');
+            if(src) {
+                img.src = src;
+                box.style.display = 'flex';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        /* ПРИВЫЧКИ */
         function createNewHabit() {
             const txt = document.getElementById('new-habit-input').value.trim();
             if(txt) {
@@ -553,7 +584,7 @@
             });
         }
 
-        /* ФИНАНСЫ (ИСПРАВЛЕНО) */
+        /* ФИНАНСЫ */
         function overrideBalance() {
             const val = parseFloat(document.getElementById('manual-balance-input').value);
             if(!isNaN(val)) {
@@ -579,10 +610,7 @@
             db.transactions.unshift(operation);
             if(type === 'income') db.balance += amount; else db.balance -= amount;
             
-            saveDb();
-            renderFinanceLog();
-            refreshUserInterface();
-            
+            saveDb(); renderFinanceLog(); refreshUserInterface();
             amtInput.value = ''; descInput.value = '';
             triggerHaptic('light');
         }
@@ -633,7 +661,7 @@
             triggerHaptic('light');
         }
 
-        /* ФИКСАЦИЯ ДНЯ С АВТООБНОВЛЕНИЕМ */
+        /* ФИКСАЦИЯ ДНЯ */
         function triggerFixDay() {
             const today = getTodayKey();
             db.history[today].saved = true;
@@ -642,8 +670,8 @@
             const insights = document.getElementById('day-insights'); insights.innerHTML = '';
             
             let tSleep = sleepH < 7 ? `⏰ Сон: ${sleepH} ч. — маловато для ЦНС. Ложись сегодня пораньше.` : sleepH > 9 ? `⏰ Сон: ${sleepH} ч. — перебор, возможна вялость.` : `⏰ Сон: ${sleepH} ч. — идеальная норма!`;
-            let tWater = db.history[today].water < db.profile.waterNorm ? `💧 Вода: Норма не выполнена. Кровь густеет, фокус падает.` : `💧 Вода: Органы промыты, гидратация топ!`;
-            let tStress = db.history[today].stress >= 6 ? `🌪 Стресс завышен. Исключи экраны за 30 минут до сна.` : `😊 Состояние под контролем, двигаешься верно.`;
+            let tWater = db.history[today].water < db.profile.waterNorm ? `💧 Вода: Норма не выполнена. Восполни гидратацию.` : `💧 Вода: Отличный уровень гидратации, норма закрыта!`;
+            let tStress = db.history[today].stress >= 6 ? `🌪 Стресс повышен. Убери девайсы за 30 минут до сна.` : `😊 Эмоциональный фон стабилен. Хороший фокус!`;
 
             [tSleep, tWater, tStress].forEach(txt => {
                 const box = document.createElement('div'); box.className = 'tip-box'; box.style.marginTop = '0';
@@ -654,16 +682,16 @@
             saveDb(); refreshUserInterface(); triggerHaptic('heavy');
 
             const btn = document.getElementById('save-day-btn');
-            btn.innerText = '✓ Показатели за сегодня обновлены!'; btn.style.background = 'var(--success-green)';
+            btn.innerText = '✓ Данные за сегодня зафиксированы!'; btn.style.background = 'var(--success-green)';
             setTimeout(() => { btn.innerText = 'Зафиксировать день'; btn.style.background = 'var(--accent-purple)'; }, 3000);
         }
 
-        /* ПОСТРОЕНИЕ ГРАФИКА */
+        /* АНАЛИТИКА: ГРАФИК */
         function refreshChart() {
             const ctx = document.getElementById('analyticsChart').getContext('2d');
             const isDark = document.body.classList.contains('dark-theme');
             
-            const sortedKeys = Object.keys(db.history).sort().slice(-10); // Последние 10 дней
+            const sortedKeys = Object.keys(db.history).sort().slice(-10);
             if(!sortedKeys.length) return;
 
             const labels = sortedKeys.map(k => { const p = k.split('-'); return `${p[2]}.${p[1]}`; });
@@ -692,21 +720,48 @@
             });
         }
 
-        /* ГЕНЕРАЦИЯ КАРТОЧЕК ДЛЯ INSTAGRAM */
+        /* ПРЕМИАЛЬНАЯ ГЕНЕРАЦИЯ КАРТОЧЕК ДЛЯ INSTAGRAM STORIES */
         function executeInstaStoryShare(canvasId, drawingLogic) {
             const cv = document.getElementById(canvasId);
             const ctx = cv.getContext('2d');
             
-            // Заливка премиального градиента (Фон сторис)
-            const g = ctx.createLinearGradient(0, 0, 1080, 1920);
-            g.addColorStop(0, '#111113'); g.addColorStop(1, '#000000');
-            ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1920);
+            // 1. Заливка глубокого премиального фона (#0D0F12)
+            ctx.fillStyle = '#0D0F12';
+            ctx.fillRect(0, 0, 1080, 1920);
 
-            // Название FLOW-13
+            // 2. Мягкое неоновое свечение (Верхний левый угол - #FF5E62)
+            let glowLeft = ctx.createRadialGradient(200, 300, 0, 200, 300, 1000);
+            glowLeft.addColorStop(0, 'rgba(255, 94, 98, 0.15)');
+            glowLeft.addColorStop(1, 'rgba(13, 15, 18, 0)');
+            ctx.fillStyle = glowLeft;
+            ctx.fillRect(0, 0, 1080, 1920);
+
+            // 3. Мягкое неоновое свечение (Нижний правый угол - #FF9966)
+            let glowRight = ctx.createRadialGradient(880, 1400, 0, 880, 1400, 900);
+            glowRight.addColorStop(0, 'rgba(255, 153, 102, 0.12)');
+            glowRight.addColorStop(1, 'rgba(13, 15, 18, 0)');
+            ctx.fillStyle = glowRight;
+            ctx.fillRect(0, 0, 1080, 1920);
+
+            // 4. Тонкие геометрические орбиты на фоне
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(540, 960, 400, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+            ctx.setLineDash([10, 15]);
+            ctx.beginPath();
+            ctx.arc(540, 960, 600, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]); // Сброс штриховки
+
+            // Заголовок FLOW-13
             ctx.fillStyle = '#ffffff'; ctx.font = 'bold 50px sans-serif'; ctx.textAlign = 'center';
             ctx.fillText('FLOW-13 // LIFE DIARY', 540, 180);
 
-            // Отрисовка специфичных данных
+            // Отрисовка уникального контента экрана
             drawingLogic(ctx);
 
             // Копирайт
@@ -726,55 +781,79 @@
 
         function shareHabitsToStories() {
             executeInstaStoryShare('storyRenderCanvas', (ctx) => {
-                ctx.fillStyle = '#bf5af2'; ctx.font = 'bold 75px sans-serif';
+                ctx.fillStyle = '#bf5af2'; ctx.font = 'bold 70px sans-serif';
                 ctx.fillText('МОИ СТРИКИ ПРИВЫЧЕК', 540, 360);
                 
                 ctx.textAlign = 'left'; ctx.font = '600 45px sans-serif';
                 let y = 560;
                 db.habits.forEach(h => {
-                    ctx.fillStyle = '#ffffff'; ctx.fillText(h.text, 140, y);
-                    ctx.fillStyle = '#ffd60a'; ctx.fillText(`🔥 ${h.streak || 0} дней`, 780, y);
-                    y += 120;
+                    if(y < 1600) {
+                        ctx.fillStyle = '#ffffff'; ctx.fillText(h.text, 140, y);
+                        ctx.fillStyle = '#ffd60a'; ctx.fillText(`🔥 ${h.streak || 0} дней`, 760, y);
+                        y += 120;
+                    }
                 });
             });
         }
 
         function shareFoodToStories() {
             const today = db.history[getTodayKey()];
-            executeInstaStoryShare('storyRenderCanvas', (ctx) => {
-                ctx.fillStyle = '#34c759'; ctx.font = 'bold 75px sans-serif';
+            
+            const drawContent = (ctx, imgObj = null) => {
+                ctx.fillStyle = '#34c759'; ctx.font = 'bold 70px sans-serif'; ctx.textAlign = 'center';
                 ctx.fillText('РАЦИОН ПИТАНИЯ TODAY', 540, 360);
                 
                 ctx.fillStyle = '#ffffff'; ctx.font = '800 130px sans-serif';
-                ctx.fillText(`${today.kcal || 0} ккал`, 540, 580);
+                ctx.fillText(`${today.kcal || 0} ккал`, 540, 560);
                 ctx.fillStyle = '#8e8e93'; ctx.font = '500 40px sans-serif';
-                ctx.fillText(`из цели в ${db.profile.kcalNorm || 2500} ккал`, 540, 660);
+                ctx.fillText(`из цели в ${db.profile.kcalNorm || 2500} ккал`, 540, 640);
 
                 ctx.fillStyle = '#ffffff'; ctx.font = '600 45px sans-serif'; ctx.textAlign = 'left';
-                ctx.fillText(`Белки: ${today.protein || 0}г`, 200, 850);
-                ctx.fillText(`Жиры: ${today.fat || 0}г`, 200, 960);
-                ctx.fillText(`Углеводы: ${today.carbs || 0}г`, 200, 1070);
+                ctx.fillText(`Белки: ${today.protein || 0}г`, 220, 780);
+                ctx.fillText(`Жиры: ${today.fat || 0}г`, 220, 880);
+                ctx.fillText(`Углеводы: ${today.carbs || 0}г`, 220, 980);
                 
-                if(today.foodList) {
-                    ctx.fillStyle = '#8e8e93'; ctx.fillText('Меню дня:', 200, 1250);
-                    ctx.fillStyle = '#ffffff'; ctx.font = 'italic 40px sans-serif';
-                    ctx.fillText(today.foodList, 200, 1320);
+                if(imgObj) {
+                    ctx.save();
+                    ctx.beginPath();
+                    // Скругленная маска под фото фиксацию еды на сторис
+                    ctx.arc(540, 1280, 220, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(imgObj, 320, 1060, 440, 440);
+                    ctx.restore();
                 }
-            });
+
+                if(today.foodList) {
+                    ctx.fillStyle = '#8e8e93'; ctx.font = '600 42px sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText('Меню дня:', 540, 1600);
+                    ctx.fillStyle = '#ffffff'; ctx.font = 'italic 38px sans-serif';
+                    ctx.fillText(today.foodList, 540, 1670);
+                }
+            };
+
+            if (today.foodPhoto) {
+                const img = new Image();
+                img.onload = function() {
+                    executeInstaStoryShare('storyRenderCanvas', (ctx) => drawContent(ctx, img));
+                };
+                img.src = today.foodPhoto;
+            } else {
+                executeInstaStoryShare('storyRenderCanvas', (ctx) => drawContent(ctx, null));
+            }
         }
 
         function shareGeneralDayToStories() {
             const today = db.history[getTodayKey()];
             executeInstaStoryShare('storyRenderCanvas', (ctx) => {
-                ctx.fillStyle = '#bf5af2'; ctx.font = 'bold 75px sans-serif';
+                ctx.fillStyle = '#bf5af2'; ctx.font = 'bold 70px sans-serif';
                 ctx.fillText('МЕТРИКИ ДНЯ', 540, 360);
                 
-                ctx.textAlign = 'left'; ctx.font = '600 50px sans-serif'; ctx.fillStyle = '#ffffff';
-                ctx.fillText(`⚡️ Энергия: ${today.energy}/10`, 220, 600);
-                ctx.fillText(`😊 Настроение: ${today.mood}/10`, 220, 750);
-                ctx.fillText(`🌪 Стресс: ${today.stress}/10`, 220, 900);
-                ctx.fillText(`💧 Вода: ${today.water} мл`, 220, 1050);
-                ctx.fillText(`⏰ Сон: ${today.sleepHours} ч.`, 220, 1200);
+                ctx.textAlign = 'left'; ctx.font = '600 48px sans-serif'; ctx.fillStyle = '#ffffff';
+                ctx.fillText(`⚡️ Энергия: ${today.energy}/10`, 240, 600);
+                ctx.fillText(`😊 Настроение: ${today.mood}/10`, 240, 740);
+                ctx.fillText(`🌪 Стресс: ${today.stress}/10`, 240, 880);
+                ctx.fillText(`💧 Вода: ${today.water} мл`, 240, 1020);
+                ctx.fillText(`⏰ Сон: ${today.sleepHours} ч.`, 240, 1160);
             });
         }
 
@@ -794,7 +873,7 @@
         }
 
         function wipeAllAppData() {
-            if(confirm('Внимание! Это полностью сотрет базу данных FLOW-13, стрики и баланс. Очистить?')) {
+            if(confirm('Внимание! Это полностью удалит базу данных FLOW-13, стрики и баланс кошелька. Продолжить?')) {
                 localStorage.removeItem('flow13_pro_db'); location.reload();
             }
         }
